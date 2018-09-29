@@ -1,7 +1,5 @@
-﻿using KalosfideAPI.Partages;
-using Microsoft.AspNetCore.Identity;
+﻿using KalosfideAPI.Data.Enums;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -21,7 +19,7 @@ namespace KalosfideAPI.Data
 
         // données
         [StringLength(1)]
-        [DefaultValue(EtatRole.Nouveau)]
+        [DefaultValue(EtatUtilisateur.Nouveau)]
         public string Etat { get; set; }
 
         [Required]

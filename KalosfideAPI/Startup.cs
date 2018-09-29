@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KalosfideAPI.Démarrage;
 using KalosfideAPI.Erreurs;
+using KalosfideAPI.Sécurité;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -36,7 +37,7 @@ namespace KalosfideAPI
             {
             options.AddPolicy("AutoriseLocalhost",
                 builder => builder
-                    .WithOrigins("https://localhost:4200")
+                    .WithOrigins("https://localhost:4200", "https://localhost:44391")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials()
@@ -52,17 +53,21 @@ namespace KalosfideAPI
         {
             app.UseMiddleware<ErrorWrappingMiddleware>();
 
-            // Cross - Origin Read Blocking(CORB) blocked cross-origin response
-            app.UseCors("AutoriseLocalhost");
 
             // 
             BaseDeDonnées.Configure(Configuration, env, app.ApplicationServices);
 
-            app.UseAuthentication();
 
             app.UseDefaultFiles();
 
             app.UseStaticFiles();
+
+            // Cross - Origin Read Blocking(CORB) blocked cross-origin response
+            app.UseCors("AutoriseLocalhost");
+
+            app.UseAuthentication();
+
+            app.UseMiddleware<FixeClaimsMiddelware>();
 
             app.UseMvc();
 

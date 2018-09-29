@@ -50,18 +50,6 @@ namespace KalosfideAPI.Démarrage
                 ClockSkew = TimeSpan.Zero
             };
 
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            }).AddJwtBearer(jwtBearerOptions =>
-            {
-                jwtBearerOptions.ClaimsIssuer = tokenValidationParameters.ValidIssuer;
-                jwtBearerOptions.TokenValidationParameters = tokenValidationParameters;
-                jwtBearerOptions.SaveToken = true;
-            });
-
             services.AddIdentity<ApplicationUser, IdentityRole>(config =>
             {
                 config.SignIn.RequireConfirmedEmail = false;
@@ -74,6 +62,19 @@ namespace KalosfideAPI.Démarrage
             })
                .AddEntityFrameworkStores<ApplicationContext>()
 ;//               .AddDefaultTokenProviders();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(jwtBearerOptions =>
+            {
+                jwtBearerOptions.ClaimsIssuer = tokenValidationParameters.ValidIssuer;
+                jwtBearerOptions.TokenValidationParameters = tokenValidationParameters;
+                jwtBearerOptions.SaveToken = true;
+                jwtBearerOptions.Events = new JwtEventsHandlers();
+            });
    
             services.ConfigureApplicationCookie(options =>
             {

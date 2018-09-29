@@ -7,9 +7,13 @@
   <ItemGroup>
     <Compile Remove="Migrations\20180905160455_InitialCreate.cs" />
     <Compile Remove="Migrations\20180905160455_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20180906083145_InitialCreate.cs" />
+    <Compile Remove="Migrations\20180906083145_InitialCreate.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Migrations\" />
+    <Folder Include="Partages\KeyString\KeyUIdRNoNo\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

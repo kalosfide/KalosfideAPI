@@ -1,7 +1,6 @@
 ﻿using KalosfideAPI.Roles;
 using KalosfideAPI.DétailCommandes;
 using KalosfideAPI.Livraisons;
-using KalosfideAPI.Partages;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Data
 {
-    public class Commande : IKeyUtilisateurIdRoleNoNo
+    public class Commande
     {
         // key
         [Required]

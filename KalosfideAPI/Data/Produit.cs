@@ -1,11 +1,9 @@
-﻿using KalosfideAPI.Partages;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 
 namespace KalosfideAPI.Data
 {
-    public class Produit : IKeyUtilisateurIdRoleNoNo
+    public class Produit
     {
         // key
         [Required]

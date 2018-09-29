@@ -1,11 +1,9 @@
 ﻿using KalosfideAPI.Data;
 using KalosfideAPI.Erreurs;
-using KalosfideAPI.Partages;
-using Microsoft.AspNetCore.Mvc;
+using KalosfideAPI.Partages.KeyLong;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 

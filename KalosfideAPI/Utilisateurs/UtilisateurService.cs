@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using KalosfideAPI.Erreurs;
 using System.Linq.Expressions;
 using KalosfideAPI.Sécurité;
+using KalosfideAPI.Data.Enums;
 
 namespace KalosfideAPI.Utilisateurs
 {
@@ -46,6 +47,16 @@ namespace KalosfideAPI.Utilisateurs
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<Utilisateur> UtilisateurAvecRoleSelectionné(string userName)
+        {
+            ApplicationUser applicationUser = await _context.Users.Where(u => u.UserName == userName).FirstOrDefaultAsync();
+            if (applicationUser == null)
+            {
+                return null;
+            }
+            return await UtilisateurAvecRoleSelectionné(applicationUser);
+        }
+
         #endregion // UtilisateurAvec
 
         #region Validation
@@ -76,14 +87,14 @@ namespace KalosfideAPI.Utilisateurs
 
         #endregion // Validation
 
-        public async Task<BaseServiceRetour<Utilisateur>> Enregistre(ApplicationUser applicationUser, string password)
+        public async Task<RetourDeService<Utilisateur>> Enregistre(ApplicationUser applicationUser, string password)
         {
             try
             {
                 var identityResult = await _userManager.CreateAsync(applicationUser, password);
                 if (!identityResult.Succeeded)
                 {
-                    return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.IdentityError);
+                    return new RetourDeService<Utilisateur>(TypeRetourDeService.IdentityError);
                 }
                 await _context.SaveChangesAsync();
                 long Max;
@@ -110,15 +121,15 @@ namespace KalosfideAPI.Utilisateurs
                 };
                 _context.JournalEtatUtilisateur.Add(changement);
                 await _context.SaveChangesAsync();
-                return new BaseServiceRetour<Utilisateur>(utilisateur);
+                return new RetourDeService<Utilisateur>(utilisateur);
             }
             catch (DbUpdateConcurrencyException)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.ConcurrencyError);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.ConcurrencyError);
             }
             catch (Exception)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.Indéterminé);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.Indéterminé);
             }
         }
 
@@ -141,64 +152,64 @@ namespace KalosfideAPI.Utilisateurs
                 .ToListAsync();
         }
 
-        public async Task<BaseServiceRetour<Utilisateur>> Update(Utilisateur utilisateur)
+        public async Task<RetourDeService<Utilisateur>> Update(Utilisateur utilisateur)
         {
             _context.Update(utilisateur);
             try
             {
                 await _context.SaveChangesAsync();
-                return new BaseServiceRetour<Utilisateur>(utilisateur);
+                return new RetourDeService<Utilisateur>(utilisateur);
             }
             catch (DbUpdateConcurrencyException)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.ConcurrencyError);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.ConcurrencyError);
             }
             catch (Exception)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.Indéterminé);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.Indéterminé);
             }
         }
 
-        public async Task<BaseServiceRetour<Utilisateur>> ChangeRoleActif(Utilisateur utilisateur, Role role)
+        public async Task<RetourDeService<Utilisateur>> ChangeRoleActif(Utilisateur utilisateur, Role role)
         {
-            utilisateur.RoleSélectionnéNo = role.No;
+            utilisateur.RoleSélectionnéNo = role.RoleNo;
             try
             {
                 await _context.SaveChangesAsync();
                 utilisateur.RoleSélectionné = role;
 //                await Sécurité.Revendications.FixeUtilisateurClaims(utilisateur.ApplicationUser, _userManager);
 
-                return new BaseServiceRetour<Utilisateur>(utilisateur);
+                return new RetourDeService<Utilisateur>(utilisateur);
             }
             catch (DbUpdateConcurrencyException)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.ConcurrencyError);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.ConcurrencyError);
             }
             catch (Exception)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.Indéterminé);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.Indéterminé);
             }
         }
 
-        public async Task<BaseServiceRetour<Utilisateur>> Delete(Utilisateur utilisateur)
+        public async Task<RetourDeService<Utilisateur>> Delete(Utilisateur utilisateur)
         {
             _context.Remove(utilisateur);
             try
             {
                 await _context.SaveChangesAsync();
-                return new BaseServiceRetour<Utilisateur>(utilisateur);
+                return new RetourDeService<Utilisateur>(utilisateur);
             }
             catch (DbUpdateConcurrencyException)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.ConcurrencyError);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.ConcurrencyError);
             }
             catch (Exception)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.Indéterminé);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.Indéterminé);
             }
         }
 
-        public async Task<BaseServiceRetour<Utilisateur>> ChangeEtat(Utilisateur utilisateur, string état)
+        public async Task<RetourDeService<Utilisateur>> ChangeEtat(Utilisateur utilisateur, string état)
         {
             ChangementEtatUtilisateur changement = new ChangementEtatUtilisateur
             {
@@ -211,15 +222,15 @@ namespace KalosfideAPI.Utilisateurs
             try
             {
                 await _context.SaveChangesAsync();
-                return new BaseServiceRetour<Utilisateur>(utilisateur);
+                return new RetourDeService<Utilisateur>(utilisateur);
             }
             catch (DbUpdateConcurrencyException)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.ConcurrencyError);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.ConcurrencyError);
             }
             catch (Exception)
             {
-                return new BaseServiceRetour<Utilisateur>(BaseServiceRetourType.Indéterminé);
+                return new RetourDeService<Utilisateur>(TypeRetourDeService.Indéterminé);
             }
         }
 

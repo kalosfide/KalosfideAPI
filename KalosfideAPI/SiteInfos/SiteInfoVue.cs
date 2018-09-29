@@ -1,6 +1,4 @@
-﻿using KalosfideAPI.Partages;
-using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+﻿using KalosfideAPI.Partages.KeyLong;
 
 namespace KalosfideAPI.SiteInfos
 {

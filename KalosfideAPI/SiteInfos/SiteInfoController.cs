@@ -1,5 +1,5 @@
 ﻿using KalosfideAPI.Erreurs;
-using KalosfideAPI.Partages;
+using KalosfideAPI.Partages.KeyLong;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;

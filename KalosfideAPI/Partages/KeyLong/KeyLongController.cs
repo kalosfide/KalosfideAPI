@@ -10,9 +10,9 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace KalosfideAPI.Partages
+namespace KalosfideAPI.Partages.KeyLong
 {
-    public abstract class KeyLongController<T, TVue> : SaveChangesController where T : class, IKeyLong where TVue : class, IKeyLong
+    public abstract class KeyLongController<T, TVue> : BaseController where T : class, IKeyLong where TVue : class, IKeyLong
     {
         protected readonly IAuthorizationService _autorisation;
         protected IKeyLongService<T> __service;
@@ -29,11 +29,22 @@ namespace KalosfideAPI.Partages
             __transformation = transformation;
         }
 
+        protected bool EstAdministrateur()
+        {
+            var claims = HttpContext.User.Claims;
+            if (claims == null)
+            {
+                return false;
+            }
+            return Sécurité.RevendicationsFabrique.EstAdministrateur(claims);
+        }
+
         public async Task<IActionResult> Ajoute(TVue vue)
         {
-            if (!ModelState.IsValid)
+            bool permis = EstAdministrateur();
+            if (!permis)
             {
-                return BadRequest(ModelState);
+                return Forbid();
             }
 
             T donnée = __transformation.CréeDonnée(vue);
@@ -45,15 +56,7 @@ namespace KalosfideAPI.Partages
                 return BadRequest(ModelState);
             }
 
-            OperationAuthorizationRequirement[] requirements = new OperationAuthorizationRequirement[]
-                { BaseActions.Ajoute.Requirement };
-            var permis = await _autorisation.AuthorizeAsync(HttpContext.User, donnée, requirements);
-            if (!permis.Succeeded)
-            {
-                return Forbid();
-            }
-
-            BaseServiceRetour<T> retour = await __service.Ajoute(donnée);
+            RetourDeService<T> retour = await __service.Ajoute(donnée);
 
             if (retour.Ok)
             {
@@ -65,6 +68,12 @@ namespace KalosfideAPI.Partages
 
         public async Task<IActionResult> Lit(string param)
         {
+            bool permis = EstAdministrateur();
+            if (!permis)
+            {
+                return Forbid();
+            }
+
             var key = KeyLongFabrique.CréeKey(param);
             if (key == null)
             {
@@ -77,19 +86,17 @@ namespace KalosfideAPI.Partages
                 return NotFound();
             }
 
-            OperationAuthorizationRequirement[] requirements = new OperationAuthorizationRequirement[]
-            { BaseActions.Lit.Requirement };
-            var permis = await _autorisation.AuthorizeAsync(HttpContext.User, donnée, requirements);
-            if (!permis.Succeeded)
-            {
-                return Forbid();
-            }
-
             return Ok(donnée);
         }
 
         public async Task<IActionResult> Lit()
         {
+            bool permis = EstAdministrateur();
+            if (!permis)
+            {
+                return Forbid();
+            }
+
             List<T> données = await __service.Lit();
 
             if (données == null)
@@ -102,9 +109,10 @@ namespace KalosfideAPI.Partages
 
         public async Task<IActionResult> Edite(TVue vue)
         {
-            if (!ModelState.IsValid)
+            bool permis = EstAdministrateur();
+            if (!permis)
             {
-                return BadRequest(ModelState);
+                return Forbid();
             }
 
             T donnée = __transformation.CréeDonnée(vue);
@@ -123,23 +131,21 @@ namespace KalosfideAPI.Partages
                 return NotFound();
             }
 
-            OperationAuthorizationRequirement[] requirements = new OperationAuthorizationRequirement[]
-            { BaseActions.Edite.Requirement };
-            var permis = await _autorisation.AuthorizeAsync(HttpContext.User, donnée, requirements);
-            if (!permis.Succeeded)
-            {
-                return Forbid();
-            }
-
             __transformation.CopieVueDansDonnées(donnée, vue);
 
-            BaseServiceRetour<T> retour = await __service.Edite(donnée);
+            RetourDeService<T> retour = await __service.Edite(donnée);
 
             return SaveChangesActionResult(retour);
         }
 
         public async Task<IActionResult> Supprime(string param)
         {
+            bool permis = EstAdministrateur();
+            if (!permis)
+            {
+                return Forbid();
+            }
+
             var key = KeyLongFabrique.CréeKey(param);
             if (key == null)
             {
@@ -150,14 +156,6 @@ namespace KalosfideAPI.Partages
             if (donnée == null)
             {
                 return NotFound();
-            }
-
-            OperationAuthorizationRequirement[] requirements = new OperationAuthorizationRequirement[]
-            { BaseActions.Supprime.Requirement };
-            var permis = await _autorisation.AuthorizeAsync(HttpContext.User, donnée, requirements);
-            if (!permis.Succeeded)
-            {
-                return Forbid();
             }
 
             var retour = await __service.Supprime(donnée);

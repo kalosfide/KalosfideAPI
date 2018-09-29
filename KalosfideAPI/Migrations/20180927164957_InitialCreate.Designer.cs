@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KalosfideAPI.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20180906083145_InitialCreate")]
+    [Migration("20180927164957_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -207,7 +207,7 @@ namespace KalosfideAPI.Migrations
                     b.Property<string>("UtilisateurId")
                         .HasMaxLength(20);
 
-                    b.Property<int>("No");
+                    b.Property<int>("RoleNo");
 
                     b.Property<string>("Adresse")
                         .HasMaxLength(500);
@@ -218,9 +218,9 @@ namespace KalosfideAPI.Migrations
                     b.Property<string>("FournisseurId")
                         .HasMaxLength(20);
 
-                    b.Property<long?>("FournisseurNo");
+                    b.Property<long?>("FournisseurRoleNo");
 
-                    b.Property<int?>("FournisseurNo1");
+                    b.Property<int?>("FournisseurRoleNo1");
 
                     b.Property<string>("FournisseurUtilisateurId");
 
@@ -232,16 +232,15 @@ namespace KalosfideAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(1);
 
-                    b.HasKey("UtilisateurId", "No");
+                    b.HasKey("UtilisateurId", "RoleNo");
 
                     b.HasIndex("FournisseurId");
 
-                    b.HasIndex("Nom")
-                        .IsUnique();
+                    b.HasIndex("Nom");
 
                     b.HasIndex("Type");
 
-                    b.HasIndex("FournisseurUtilisateurId", "FournisseurNo1");
+                    b.HasIndex("FournisseurUtilisateurId", "FournisseurRoleNo1");
 
                     b.ToTable("Roles");
                 });
@@ -257,7 +256,7 @@ namespace KalosfideAPI.Migrations
 
                     b.Property<int>("RoleSélectionnéNo");
 
-                    b.Property<int?>("RoleSélectionnéNo1");
+                    b.Property<int?>("RoleSélectionnéRoleNo");
 
                     b.Property<string>("RoleSélectionnéUtilisateurId");
 
@@ -269,7 +268,7 @@ namespace KalosfideAPI.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.HasIndex("RoleSélectionnéUtilisateurId", "RoleSélectionnéNo1");
+                    b.HasIndex("RoleSélectionnéUtilisateurId", "RoleSélectionnéRoleNo");
 
                     b.ToTable("Utilisateurs");
                 });
@@ -473,8 +472,8 @@ namespace KalosfideAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("KalosfideAPI.Data.Role", "Fournisseur")
-                        .WithMany("Fournisseurs")
-                        .HasForeignKey("FournisseurUtilisateurId", "FournisseurNo1");
+                        .WithMany("Clients")
+                        .HasForeignKey("FournisseurUtilisateurId", "FournisseurRoleNo1");
                 });
 
             modelBuilder.Entity("KalosfideAPI.Data.Utilisateur", b =>
@@ -486,7 +485,7 @@ namespace KalosfideAPI.Migrations
 
                     b.HasOne("KalosfideAPI.Data.Role", "RoleSélectionné")
                         .WithMany()
-                        .HasForeignKey("RoleSélectionnéUtilisateurId", "RoleSélectionnéNo1");
+                        .HasForeignKey("RoleSélectionnéUtilisateurId", "RoleSélectionnéRoleNo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

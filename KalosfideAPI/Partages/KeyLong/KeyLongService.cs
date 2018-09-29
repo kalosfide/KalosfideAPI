@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KalosfideAPI.Partages
+namespace KalosfideAPI.Partages.KeyLong
 {
     public class KeyLongService<T> : BaseService<T>, IKeyLongService<T> where T : class, IKeyLong
     {
@@ -19,21 +19,21 @@ namespace KalosfideAPI.Partages
             _dbSet = dbSet;
         }
 
-        public async Task<BaseServiceRetour<T>> Ajoute(T donnée)
+        public async Task<RetourDeService<T>> Ajoute(T donnée)
         {
             _dbSet.Add(donnée);
             try
             {
                 await _context.SaveChangesAsync();
-                return new BaseServiceRetour<T>(donnée);
+                return new RetourDeService<T>(donnée);
             }
             catch (DbUpdateConcurrencyException)
             {
-                return new BaseServiceRetour<T>(BaseServiceRetourType.ConcurrencyError);
+                return new RetourDeService<T>(TypeRetourDeService.ConcurrencyError);
             }
             catch (Exception)
             {
-                return new BaseServiceRetour<T>(BaseServiceRetourType.Indéterminé);
+                return new RetourDeService<T>(TypeRetourDeService.Indéterminé);
             }
         }
 
@@ -49,39 +49,39 @@ namespace KalosfideAPI.Partages
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<BaseServiceRetour<T>> Edite(T donnée)
+        public async Task<RetourDeService<T>> Edite(T donnée)
         {
             _context.Update(donnée);
             try
             {
                 await _context.SaveChangesAsync();
-                return new BaseServiceRetour<T>(donnée);
+                return new RetourDeService<T>(donnée);
             }
             catch (DbUpdateConcurrencyException)
             {
-                return new BaseServiceRetour<T>(BaseServiceRetourType.ConcurrencyError);
+                return new RetourDeService<T>(TypeRetourDeService.ConcurrencyError);
             }
             catch (Exception)
             {
-                return new BaseServiceRetour<T>(BaseServiceRetourType.Indéterminé);
+                return new RetourDeService<T>(TypeRetourDeService.Indéterminé);
             }
         }
 
-        public async Task<BaseServiceRetour<T>> Supprime(T donnée)
+        public async Task<RetourDeService<T>> Supprime(T donnée)
         {
             _context.Remove(donnée);
             try
             {
                 await _context.SaveChangesAsync();
-                return new BaseServiceRetour<T>(donnée);
+                return new RetourDeService<T>(donnée);
             }
             catch (DbUpdateConcurrencyException)
             {
-                return new BaseServiceRetour<T>(BaseServiceRetourType.ConcurrencyError);
+                return new RetourDeService<T>(TypeRetourDeService.ConcurrencyError);
             }
             catch (Exception)
             {
-                return new BaseServiceRetour<T>(BaseServiceRetourType.Indéterminé);
+                return new RetourDeService<T>(TypeRetourDeService.Indéterminé);
             }
         }
     }

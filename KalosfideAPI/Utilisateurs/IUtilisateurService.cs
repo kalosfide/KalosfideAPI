@@ -16,15 +16,15 @@ namespace KalosfideAPI.Utilisateurs
 
         Task<bool> NomUnique(string nom);
 
-        Task<BaseServiceRetour<Utilisateur>> Enregistre(ApplicationUser applicationUser, string password);
+        Task<RetourDeService<Utilisateur>> Enregistre(ApplicationUser applicationUser, string password);
 
-        Task<BaseServiceRetour<Utilisateur>> ChangeRoleActif(Utilisateur utilisateur, Role role);
+        Task<RetourDeService<Utilisateur>> ChangeRoleActif(Utilisateur utilisateur, Role role);
 
         Task<Utilisateur> Lit(string id);
 
         Task<List<Utilisateur>> Lit();
 
-        Task<BaseServiceRetour<Utilisateur>> Update(Utilisateur utilisateur);
-        Task<BaseServiceRetour<Utilisateur>> Delete(Utilisateur utilisateur);
+        Task<RetourDeService<Utilisateur>> Update(Utilisateur utilisateur);
+        Task<RetourDeService<Utilisateur>> Delete(Utilisateur utilisateur);
     }
 }

@@ -1,4 +1,4 @@
-﻿using KalosfideAPI.Partages;
+﻿using KalosfideAPI.Partages.KeyLong;
 using System.ComponentModel.DataAnnotations;
 
 namespace KalosfideAPI.SiteInfos

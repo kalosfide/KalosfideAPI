@@ -1,21 +1,29 @@
 ﻿using KalosfideAPI.Data;
+using KalosfideAPI.Data.Enums;
 using KalosfideAPI.Partages;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Roles
 {
-    public class RoleService : KeyUtilisateurIdNoService<Role>, IRoleService
+    public class RoleService : Partages.KeyString.KeyUIdRNoService<Role>, IRoleService
     {
 
         public RoleService(ApplicationContext context) : base(context, context.Role)
         {
         }
 
-        public new async Task<BaseServiceRetour<Role>> Ajoute(Role role)
+        public async Task<List<Role>> Fournisseurs()
         {
-            BaseServiceRetour<Role> retour = await base.Ajoute(role);
+            return await _context.Role.Where(role => role.Type == TypeDeRole.Fournisseur.Code).ToListAsync();
+        }
+
+        public new async Task<RetourDeService<Role>> Ajoute(Role role)
+        {
+            RetourDeService<Role> retour = await base.Ajoute(role);
             if (retour.Ok)
             {
                 retour = await ChangeEtat(role, EtatRole.Nouveau);
@@ -23,12 +31,12 @@ namespace KalosfideAPI.Roles
             return retour;
         }
 
-        public async Task<BaseServiceRetour<Role>> ChangeEtat(Role role, string état)
+        public async Task<RetourDeService<Role>> ChangeEtat(Role role, string état)
         {
             ChangementEtatRole etatDeRole = new ChangementEtatRole
             {
                 UtilisateurId = role.UtilisateurId,
-                RoleNo = role.No,
+                RoleNo = role.RoleNo,
                 Date = DateTime.Now,
                 Etat = état
             };
@@ -37,15 +45,15 @@ namespace KalosfideAPI.Roles
             try
             {
                 await _context.SaveChangesAsync();
-                return new BaseServiceRetour<Role>(role);
+                return new RetourDeService<Role>(role);
             }
             catch (DbUpdateConcurrencyException)
             {
-                return new BaseServiceRetour<Role>(BaseServiceRetourType.ConcurrencyError);
+                return new RetourDeService<Role>(TypeRetourDeService.ConcurrencyError);
             }
             catch (Exception)
             {
-                return new BaseServiceRetour<Role>(BaseServiceRetourType.Indéterminé);
+                return new RetourDeService<Role>(TypeRetourDeService.Indéterminé);
             }
         }
     }

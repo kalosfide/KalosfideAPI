@@ -10,7 +10,7 @@ namespace KalosfideAPI.Roles
             RoleVue vue = new RoleVue
             {
                 UtilisateurId= role.UtilisateurId,
-                No= role.No,
+                RoleNo= role.RoleNo,
                 Type = role.Type,
                 Nom = role.Nom,
                 Adresse = role.Adresse,
@@ -18,7 +18,7 @@ namespace KalosfideAPI.Roles
             if (role.FournisseurId != null)
             {
                 vue.FournisseurId = role.FournisseurId;
-                vue.FournisseurNo = role.FournisseurNo;
+                vue.FournisseurNo = role.FournisseurRoleNo;
             }
             return vue;
         }
@@ -38,7 +38,7 @@ namespace KalosfideAPI.Roles
             Role role = new Role
             {
                 UtilisateurId = vue.UtilisateurId,
-                No = vue.No,
+                RoleNo = vue.RoleNo,
                 Type = vue.Type,
                 Nom = vue.Nom,
                 Adresse = vue.Adresse,
@@ -46,7 +46,7 @@ namespace KalosfideAPI.Roles
             if (vue.FournisseurId != null)
             {
                 role.FournisseurId = vue.FournisseurId;
-                role.FournisseurNo = vue.FournisseurNo;
+                role.FournisseurRoleNo = vue.FournisseurNo;
             }
             return role;
         }
@@ -58,7 +58,7 @@ namespace KalosfideAPI.Roles
             if (vue.FournisseurId != null)
             {
                 role.FournisseurId = vue.FournisseurId;
-                role.FournisseurNo = vue.FournisseurNo;
+                role.FournisseurRoleNo = vue.FournisseurNo;
             }
         }
     }

@@ -1,12 +1,11 @@
 ﻿using KalosfideAPI.Data;
+using KalosfideAPI.Data.Enums;
+using KalosfideAPI.Data.Keys;
 using KalosfideAPI.Erreurs;
-using KalosfideAPI.Partages;
-using KalosfideAPI.Sécurité;
+using KalosfideAPI.Partages.KeyString;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using System;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Roles
@@ -16,21 +15,20 @@ namespace KalosfideAPI.Roles
     [ApiController]
     [ApiValidationFilter]
     [Authorize]
-    public class RoleController : KeyUtilisateurIdNoController<Role, RoleVue>
+    public class RoleController : KeyUIdRNoController<Role, RoleVue>
     {
         public RoleController(
-            IAuthorizationService autorisation,
             IRoleService service,
             IRoleTransformation transformation
-        ) : base(autorisation, service, transformation)
+        ) : base(service, transformation)
         {
         }
 
-        private IRoleService _service { get => __service as IRoleService; }
-        private IRoleTransformation _transformation { get => __transformation as IRoleTransformation; }
+        private new IRoleService _service { get => __service as IRoleService; }
+        private new IRoleTransformation _transformation { get => __transformation as IRoleTransformation; }
 
         // POST api/utilisateur/ajoute
-        [HttpPost("/api/utilisateur/enregistre")]
+        [HttpPost]
         [ProducesResponseType(201)] // created
         [ProducesResponseType(400)] // Bad request
         public new async Task<IActionResult> Ajoute(RoleVue vue)
@@ -57,32 +55,64 @@ namespace KalosfideAPI.Roles
             return await base.Supprime(param);
         }
 
+        [HttpGet]
         public new async Task<IActionResult> DernierNo(string param)
         {
             return await base.DernierNo(param);
         }
 
-        public async Task<IActionResult> Accepte(string param)
+        private async Task<IActionResult> ChangeEtat(string key, string état, Func<Role, bool> peutChanger)
         {
-            var ikey = KeyUtilisateurIdNoFabrique.CréeKey(param);
-            if (ikey == null || ikey is KeyUtilisateurId)
+            AKeyString aKey = CréeAKey(key);
+            if (aKey == null)
             {
                 return BadRequest();
             }
 
-            var donnée = await __service.Lit(ikey as KeyUtilisateurIdNo);
+            var donnée = await _service.Lit(aKey);
             if (donnée == null)
             {
                 return NotFound();
             }
-            OperationAuthorizationRequirement[] requirements = new OperationAuthorizationRequirement[]
-                { RoleActions.Accepte.Requirement };
-            var permis = await _autorisation.AuthorizeAsync(HttpContext.User, donnée, requirements);
-            if (!permis.Succeeded)
+
+            bool permis = peutChanger(donnée);
+            if (!permis)
             {
                 return Forbid();
             }
-            await _service.ChangeEtat(donnée, EtatRole.Actif);
+            var retour = await _service.ChangeEtat(donnée, EtatRole.Actif);
+
+            return SaveChangesActionResult(retour);
+        }
+
+        private bool PeutChangerEtat(Role role)
+        {
+            var revendications = Sécurité.RevendicationsFabrique.Revendications(HttpContext.User);
+            if (role.Type == TypeDeRole.Fournisseur.Code)
+            {
+                return revendications.EstAdministrateur;
+            }
+            if (role.Type == TypeDeRole.Client.Code)
+            {
+                return revendications.UtilisateurId == role.FournisseurId && revendications.EtatUtilisateur == EtatUtilisateur.Actif
+                        && revendications.EtatRole == EtatRole.Actif;
+            }
+            return false;
+        }
+
+        public async Task<IActionResult> Accepte(string key)
+        {
+            return await ChangeEtat(key, EtatRole.Actif, PeutChangerEtat);
+        }
+
+        public async Task<IActionResult> Refuse(string key)
+        {
+            return await ChangeEtat(key, EtatRole.Inactif, PeutChangerEtat);
+        }
+
+        public async Task<IActionResult> Fournisseurs()
+        {
+            var donnée = await _service.Fournisseurs();
             return Ok(donnée);
         }
     }

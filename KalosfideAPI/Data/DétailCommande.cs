@@ -1,5 +1,4 @@
-﻿using KalosfideAPI.Partages;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace KalosfideAPI.Data

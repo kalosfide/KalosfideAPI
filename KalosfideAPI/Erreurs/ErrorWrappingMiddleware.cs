@@ -23,6 +23,7 @@ namespace KalosfideAPI.Erreurs
         {
             try
             {
+
                 await _next.Invoke(context);
             }
             catch (Exception ex)

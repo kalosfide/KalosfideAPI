@@ -1,9 +1,5 @@
-﻿using KalosfideAPI.ChangementsDeRole;
-using KalosfideAPI.Commandes;
-using KalosfideAPI.Livraisons;
-using KalosfideAPI.Partages;
-using KalosfideAPI.Produits;
-using KalosfideAPI.Utilisateurs;
+﻿using KalosfideAPI.Data.Enums;
+using KalosfideAPI.Data.Keys;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,15 +8,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KalosfideAPI.Data
 {
-    public class Role : IKeyUtilisateurIdNo
+    public class Role : AKeyUIdRNo
     {
 
         // key
         [Required]
         [MaxLength(LongueurUtilisateurId.Max)]
-        public string UtilisateurId { get; set; }
+        public override string UtilisateurId { get; set; }
         [Required]
-        public int No { get; set; }
+        public override int RoleNo { get; set; }
 
         // données
         [Required]
@@ -39,7 +35,7 @@ namespace KalosfideAPI.Data
 
         [MaxLength(LongueurUtilisateurId.Max)]
         public string FournisseurId { get; set; }
-        public long? FournisseurNo { get; set; }
+        public long? FournisseurRoleNo { get; set; }
 
         // navigation
         virtual public Utilisateur Utilisateur { get; set; }
@@ -60,6 +56,16 @@ namespace KalosfideAPI.Data
         [InverseProperty("Client")]
         virtual public ICollection<Commande> Commandes { get; set; }
 
+        // utiles
+        public bool EstFournisseur(Role client)
+        {
+            return UtilisateurId == client.FournisseurId && RoleNo == client.FournisseurRoleNo;
+        }
+        public bool EstClient(Role fournisseur)
+        {
+            return FournisseurId == fournisseur.UtilisateurId && FournisseurRoleNo == fournisseur.RoleNo;
+        }
+
         // création
         public static void CréeTable(ModelBuilder builder)
         {
@@ -68,13 +74,13 @@ namespace KalosfideAPI.Data
             entité.HasKey(donnée => new
             {
                 donnée.UtilisateurId,
-                donnée.No
+                donnée.RoleNo
             });
 
             entité.HasOne(r => r.Utilisateur).WithMany(u => u.Roles);
 
             entité.HasIndex(donnée => donnée.Type);
-            entité.HasIndex(donnée => donnée.Nom).IsUnique();
+            entité.HasIndex(donnée => donnée.Nom);
             entité.HasIndex(donnée => donnée.FournisseurId);
 
             entité.ToTable("Roles");

@@ -177,7 +177,7 @@ namespace KalosfideAPI.Migrations
                     UserId = table.Column<string>(nullable: false),
                     RoleSélectionnéNo = table.Column<int>(nullable: false),
                     RoleSélectionnéUtilisateurId = table.Column<string>(nullable: true),
-                    RoleSélectionnéNo1 = table.Column<int>(nullable: true)
+                    RoleSélectionnéRoleNo = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -214,19 +214,19 @@ namespace KalosfideAPI.Migrations
                 columns: table => new
                 {
                     UtilisateurId = table.Column<string>(maxLength: 20, nullable: false),
-                    No = table.Column<int>(nullable: false),
+                    RoleNo = table.Column<int>(nullable: false),
                     Type = table.Column<string>(maxLength: 1, nullable: false),
                     Etat = table.Column<string>(maxLength: 1, nullable: true),
                     Nom = table.Column<string>(maxLength: 200, nullable: false),
                     Adresse = table.Column<string>(maxLength: 500, nullable: true),
                     FournisseurId = table.Column<string>(maxLength: 20, nullable: true),
-                    FournisseurNo = table.Column<long>(nullable: true),
+                    FournisseurRoleNo = table.Column<long>(nullable: true),
                     FournisseurUtilisateurId = table.Column<string>(nullable: true),
-                    FournisseurNo1 = table.Column<int>(nullable: true)
+                    FournisseurRoleNo1 = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Roles", x => new { x.UtilisateurId, x.No });
+                    table.PrimaryKey("PK_Roles", x => new { x.UtilisateurId, x.RoleNo });
                     table.ForeignKey(
                         name: "FK_Roles_Utilisateurs_UtilisateurId",
                         column: x => x.UtilisateurId,
@@ -234,10 +234,10 @@ namespace KalosfideAPI.Migrations
                         principalColumn: "UtilisateurId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Roles_Roles_FournisseurUtilisateurId_FournisseurNo1",
-                        columns: x => new { x.FournisseurUtilisateurId, x.FournisseurNo1 },
+                        name: "FK_Roles_Roles_FournisseurUtilisateurId_FournisseurRoleNo1",
+                        columns: x => new { x.FournisseurUtilisateurId, x.FournisseurRoleNo1 },
                         principalTable: "Roles",
-                        principalColumns: new[] { "UtilisateurId", "No" },
+                        principalColumns: new[] { "UtilisateurId", "RoleNo" },
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -257,7 +257,7 @@ namespace KalosfideAPI.Migrations
                         name: "FK_JournalEtatRole_Roles_UtilisateurId_RoleNo",
                         columns: x => new { x.UtilisateurId, x.RoleNo },
                         principalTable: "Roles",
-                        principalColumns: new[] { "UtilisateurId", "No" },
+                        principalColumns: new[] { "UtilisateurId", "RoleNo" },
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -277,7 +277,7 @@ namespace KalosfideAPI.Migrations
                         name: "FK_Livraisons_Roles_UtilisateurId_RoleNo",
                         columns: x => new { x.UtilisateurId, x.RoleNo },
                         principalTable: "Roles",
-                        principalColumns: new[] { "UtilisateurId", "No" },
+                        principalColumns: new[] { "UtilisateurId", "RoleNo" },
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -299,7 +299,7 @@ namespace KalosfideAPI.Migrations
                         name: "FK_Produits_Roles_UtilisateurId_RoleNo",
                         columns: x => new { x.UtilisateurId, x.RoleNo },
                         principalTable: "Roles",
-                        principalColumns: new[] { "UtilisateurId", "No" },
+                        principalColumns: new[] { "UtilisateurId", "RoleNo" },
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -324,7 +324,7 @@ namespace KalosfideAPI.Migrations
                         name: "FK_Commandes_Roles_UtilisateurId_RoleNo",
                         columns: x => new { x.UtilisateurId, x.RoleNo },
                         principalTable: "Roles",
-                        principalColumns: new[] { "UtilisateurId", "No" },
+                        principalColumns: new[] { "UtilisateurId", "RoleNo" },
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Commandes_Livraisons_LivraisonUtilisateurId_LivraisonRoleNo_LivraisonNo1",
@@ -436,8 +436,7 @@ namespace KalosfideAPI.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Roles_Nom",
                 table: "Roles",
-                column: "Nom",
-                unique: true);
+                column: "Nom");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Roles_Type",
@@ -445,9 +444,9 @@ namespace KalosfideAPI.Migrations
                 column: "Type");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Roles_FournisseurUtilisateurId_FournisseurNo1",
+                name: "IX_Roles_FournisseurUtilisateurId_FournisseurRoleNo1",
                 table: "Roles",
-                columns: new[] { "FournisseurUtilisateurId", "FournisseurNo1" });
+                columns: new[] { "FournisseurUtilisateurId", "FournisseurRoleNo1" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Utilisateurs_UserId",
@@ -456,16 +455,16 @@ namespace KalosfideAPI.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Utilisateurs_RoleSélectionnéUtilisateurId_RoleSélectionnéNo1",
+                name: "IX_Utilisateurs_RoleSélectionnéUtilisateurId_RoleSélectionnéRoleNo",
                 table: "Utilisateurs",
-                columns: new[] { "RoleSélectionnéUtilisateurId", "RoleSélectionnéNo1" });
+                columns: new[] { "RoleSélectionnéUtilisateurId", "RoleSélectionnéRoleNo" });
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Utilisateurs_Roles_RoleSélectionnéUtilisateurId_RoleSélectionnéNo1",
+                name: "FK_Utilisateurs_Roles_RoleSélectionnéUtilisateurId_RoleSélectionnéRoleNo",
                 table: "Utilisateurs",
-                columns: new[] { "RoleSélectionnéUtilisateurId", "RoleSélectionnéNo1" },
+                columns: new[] { "RoleSélectionnéUtilisateurId", "RoleSélectionnéRoleNo" },
                 principalTable: "Roles",
-                principalColumns: new[] { "UtilisateurId", "No" },
+                principalColumns: new[] { "UtilisateurId", "RoleNo" },
                 onDelete: ReferentialAction.Restrict);
         }
 
@@ -476,7 +475,7 @@ namespace KalosfideAPI.Migrations
                 table: "Utilisateurs");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_Utilisateurs_Roles_RoleSélectionnéUtilisateurId_RoleSélectionnéNo1",
+                name: "FK_Utilisateurs_Roles_RoleSélectionnéUtilisateurId_RoleSélectionnéRoleNo",
                 table: "Utilisateurs");
 
             migrationBuilder.DropTable(

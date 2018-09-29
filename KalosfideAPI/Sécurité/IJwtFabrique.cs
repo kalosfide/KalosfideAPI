@@ -6,6 +6,6 @@ namespace KalosfideAPI.Sécurité
 {
     public interface IJwtFabrique
     {
-        JwtRéponse CréeReponse(ApplicationUser user, Utilisateur utilisateurAvecRoleSelectionné);
+        Task<JwtRéponse> CréeReponse(ApplicationUser user, Utilisateur utilisateurAvecRoleSelectionné);
     }
 }

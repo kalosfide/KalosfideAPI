@@ -3,16 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KalosfideAPI.Partages
+namespace KalosfideAPI.Partages.KeyLong
 {
-    public interface IKeyLong
-    {
-        long Id { get; set; }
-    }
-    public class KeyLong : IKeyLong
-    {
-        public long Id { get; set; }
-    }
     public static class KeyLongFabrique
     {
         public static KeyLong CréeKey(IKeyLong key)

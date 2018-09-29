@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -12,10 +13,8 @@ namespace KalosfideAPI.Roles
 
         public static void ConfigureServices(IServiceCollection services)
         {
-
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IRoleTransformation, RoleTransformation>();
-
         }
     }
 }

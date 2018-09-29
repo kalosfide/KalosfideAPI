@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KalosfideAPI.Sécurité
+namespace KalosfideAPI.Partages.KeyLong
 {
-    public class JwtEvents
+    public class KeyLong : IKeyLong
     {
+        public long Id { get; set; }
     }
 }

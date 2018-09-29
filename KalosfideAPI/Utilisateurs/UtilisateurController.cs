@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -15,10 +16,10 @@ namespace KalosfideAPI.Utilisateurs
     [Route("api/[controller]")]
     [ApiValidationFilter]
     [Authorize]
-    public class UtilisateurController : SaveChangesController
+    public class UtilisateurController : BaseController
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IJwtFabrique _jwtFactory;
+        private readonly IJwtFabrique _jwtFabrique;
         private readonly JwtFabriqueOptions _jwtOptions;
         private readonly IAuthorizationService _autorisation;
 
@@ -27,7 +28,7 @@ namespace KalosfideAPI.Utilisateurs
 
         public UtilisateurController(
             UserManager<ApplicationUser> userManager,
-            IJwtFabrique jwtFactory,
+            IJwtFabrique jwtFabrique,
             IOptions<JwtFabriqueOptions> jwtOptions,
             IAuthorizationService autorisation,
             IUtilisateurService service,
@@ -35,11 +36,17 @@ namespace KalosfideAPI.Utilisateurs
         )
         {
             _userManager = userManager;
-            _jwtFactory = jwtFactory;
+            _jwtFabrique = jwtFabrique;
             _jwtOptions = jwtOptions.Value;
             _autorisation = autorisation;
             _service = service;
             _transformation = transformation;
+            opérations = new List<Opération>
+            {
+                new Opération { Nom = nameof(Lit) },
+                new Opération { Nom = nameof(Edite) },
+                new Opération { Nom = nameof(Supprime) },
+            };
         }
 
         private ErreurDeModel ErreurDoublon(string code, string texte, string doublon)
@@ -96,7 +103,7 @@ namespace KalosfideAPI.Utilisateurs
                 return BadRequest(ModelState);
             }
 
-            BaseServiceRetour<Utilisateur> retour = await _service.Enregistre(applicationUser, vue.Password);
+            RetourDeService<Utilisateur> retour = await _service.Enregistre(applicationUser, vue.Password);
 
             if (retour.Ok)
             {
@@ -105,6 +112,28 @@ namespace KalosfideAPI.Utilisateurs
             }
 
             return SaveChangesActionResult(retour);
+        }
+
+        [HttpPost("Connecte")]
+        [ProducesResponseType(200)] // Ok
+        [ProducesResponseType(400)] // Bad request
+        [AllowAnonymous]
+        public async Task<IActionResult> Connecte([FromBody]ConnectionVue connection)
+        {
+            ApplicationUser user = await ApplicationUserVérifié(connection.UserName, connection.Password);
+            if (user == null)
+            {
+                ErreurDeModel erreur = new ErreurDeModel
+                {
+                    Code = "identifiants",
+                    Description = "Nom ou mot de passe invalide"
+                };
+                erreur.AjouteAModelState(ModelState);
+                return BadRequest(ModelState);
+            }
+            Utilisateur utilisateurAvecRoleSelectionné = await _service.UtilisateurAvecRoleSelectionné(user);
+            JwtRéponse jwtRéponse = await _jwtFabrique.CréeReponse(user, utilisateurAvecRoleSelectionné);
+            return new OkObjectResult(jwtRéponse);
         }
 
         // GET api/utilisateur/?id
@@ -125,7 +154,7 @@ namespace KalosfideAPI.Utilisateurs
         [HttpGet]
         [ProducesResponseType(200)] // Ok
         [ProducesResponseType(404)] // Not found
-        public async Task<IActionResult> LitTout()
+        public async Task<IActionResult> Lit()
         {
             return Ok(await _service.Lit());
         }
@@ -187,7 +216,7 @@ namespace KalosfideAPI.Utilisateurs
             Role role = null;
             foreach (Role r in utilisateur.Roles)
             {
-                if (r.No == roleNo)
+                if (r.RoleNo == roleNo)
                 {
                     role = r;
                     break;
@@ -203,32 +232,10 @@ namespace KalosfideAPI.Utilisateurs
             if (retour.Ok)
             {
                 Utilisateur utilisateurAvecRoleSelectionné = await _service.UtilisateurAvecRoleSelectionné(user);
-                JwtRéponse jwtRéponse = _jwtFactory.CréeReponse(user, utilisateurAvecRoleSelectionné);
+                JwtRéponse jwtRéponse = await _jwtFabrique.CréeReponse(user, utilisateurAvecRoleSelectionné);
                 return new OkObjectResult(jwtRéponse);
             }
             return SaveChangesActionResult(retour);
-        }
-
-        [AllowAnonymous]
-        [HttpPost("Connecte")]
-        [ProducesResponseType(200)] // Ok
-        [ProducesResponseType(400)] // Bad request
-        public async Task<IActionResult> Connecte([FromBody]ConnectionVue connection)
-        {
-            ApplicationUser user = await ApplicationUserVérifié(connection.UserName, connection.Password);
-            if (user == null)
-            {
-                ErreurDeModel erreur = new ErreurDeModel
-                {
-                    Code = "identifiants",
-                    Description = "Nom ou mot de passe invalide"
-                };
-                erreur.AjouteAModelState(ModelState);
-                return BadRequest(ModelState);
-            }
-            Utilisateur utilisateurAvecRoleSelectionné = await _service.UtilisateurAvecRoleSelectionné(user);
-            JwtRéponse jwtRéponse = _jwtFactory.CréeReponse(user, utilisateurAvecRoleSelectionné);
-            return new OkObjectResult(jwtRéponse);
         }
 
         private async Task<ApplicationUser> ApplicationUserVérifié(string userName, string password)

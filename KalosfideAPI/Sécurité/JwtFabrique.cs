@@ -29,10 +29,23 @@ namespace KalosfideAPI.Sécurité
             ThrowIfInvalidOptions(_jwtOptions);
         }
 
-        public JwtRéponse CréeReponse(ApplicationUser user, Utilisateur utilisateurAvecRoleSelectionné)
+        public async Task<JwtRéponse> CréeReponse(ApplicationUser user, Utilisateur utilisateurAvecRoleSelectionné)
         {
+            List<Claim> claims = new List<Claim>
+            {
+                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
+                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64),
+            };
+
+            List<Revendication> ListeRevendications = RevendicationsFabrique.ListeRevendications(utilisateurAvecRoleSelectionné);
+            ListeRevendications.ForEach(revendication => claims.Add(revendication.JwtClaim));
+
             Revendications revendications = RevendicationsFabrique.Revendications(utilisateurAvecRoleSelectionné);
-            string jeton = CréeJeton(RevendicationsFabrique.Claims(revendications));
+
+//            claims.Concat(RevendicationsFabrique.Claims(revendications));
+
+            string jeton = CréeJeton(claims);
 
             JwtRéponse jwtr = new JwtRéponse
             {
