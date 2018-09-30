@@ -17,33 +17,6 @@ namespace KalosfideAPI.Partages.KeyString
         {
         }
 
-        public async Task<T> Lit(KeyUIdRNo key, IQueryable<T> iQuery)
-        {
-            return await iQuery
-                .Where(donnée => donnée.UtilisateurId == key.UtilisateurId && donnée.RoleNo == key.RoleNo)
-                .FirstOrDefaultAsync();
-        }
-
-        public async Task<List<T>> Liste(KeyUId key, IQueryable<T> iQuery)
-        {
-            return await iQuery.Where(donnée => donnée.UtilisateurId == key.UtilisateurId).ToListAsync();
-        }
-
-        public async Task<List<T>> Liste(IQueryable<T> iQuery)
-        {
-            return await iQuery.ToListAsync();
-        }
-
-        public async Task<T> Lit(KeyUIdRNo key)
-        {
-            return await Lit(key, _dbSet);
-        }
-
-        public async Task<List<T>> Liste(KeyUId key)
-        {
-            return await Liste(key, _dbSet);
-        }
-
         public async Task<int> DernierNo(KeyUId key)
         {
             var données = _dbSet.Where(donnée => donnée.UtilisateurId == key.UtilisateurId);

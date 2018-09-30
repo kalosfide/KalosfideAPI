@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Partages\KeyString\KeyUIdRNoNo\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

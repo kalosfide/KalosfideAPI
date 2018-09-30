@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace KalosfideAPI.Partages.KeyString
 {
     public abstract class KeyUIdRNoController<T, TVue> : KeyStringController<T, TVue>
-        where T: AKeyUIdRNo where TVue: AKeyUIdRNo
+        where T: AKeyUIdRNo where TVue: AKeyUIdRNoVue
     {
         protected IKeyUIdRNoService<T> _service { get { return __service as IKeyUIdRNoService<T>; } }
         protected ITransformation<T, TVue> _transformation { get { return __transformation; } }

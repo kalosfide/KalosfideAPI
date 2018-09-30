@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace KalosfideAPI.Partages.KeyString
 {
     public abstract class KeyStringController<T, TVue> : BaseController
-        where T : AKeyString where TVue : AKeyString
+        where T : AKeyString where TVue : KeyStringVue
     {
         protected IKeyStringService<T> __service;
         protected ITransformation<T, TVue> __transformation;

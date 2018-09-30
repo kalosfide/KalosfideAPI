@@ -43,8 +43,6 @@ namespace KalosfideAPI.Sécurité
 
             Revendications revendications = RevendicationsFabrique.Revendications(utilisateurAvecRoleSelectionné);
 
-//            claims.Concat(RevendicationsFabrique.Claims(revendications));
-
             string jeton = CréeJeton(claims);
 
             JwtRéponse jwtr = new JwtRéponse

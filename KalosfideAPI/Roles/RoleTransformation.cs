@@ -1,4 +1,5 @@
 ﻿using KalosfideAPI.Data;
+using KalosfideAPI.Data.Keys;
 using System.Collections.Generic;
 
 namespace KalosfideAPI.Roles
@@ -9,16 +10,14 @@ namespace KalosfideAPI.Roles
         {
             RoleVue vue = new RoleVue
             {
-                UtilisateurId= role.UtilisateurId,
-                RoleNo= role.RoleNo,
+                VueId = role.Key,
                 Type = role.Type,
                 Nom = role.Nom,
                 Adresse = role.Adresse,
             };
             if (role.FournisseurId != null)
             {
-                vue.FournisseurId = role.FournisseurId;
-                vue.FournisseurNo = role.FournisseurRoleNo;
+                vue.FournisseurKey = KeyFabrique.CréeKey(role.FournisseurId, role.FournisseurRoleNo.ToString());
             }
             return vue;
         }
@@ -35,18 +34,20 @@ namespace KalosfideAPI.Roles
 
         public Role CréeDonnée(RoleVue vue)
         {
+            KeyFabrique fabrique = new KeyFabrique(vue.Key);
             Role role = new Role
             {
-                UtilisateurId = vue.UtilisateurId,
-                RoleNo = vue.RoleNo,
+                UtilisateurId = fabrique.KeyUIdRNo.UtilisateurId,
+                RoleNo = fabrique.KeyUIdRNo.RoleNo,
                 Type = vue.Type,
                 Nom = vue.Nom,
                 Adresse = vue.Adresse,
             };
-            if (vue.FournisseurId != null)
+            if (vue.FournisseurKey != null)
             {
-                role.FournisseurId = vue.FournisseurId;
-                role.FournisseurRoleNo = vue.FournisseurNo;
+                fabrique = new KeyFabrique(vue.FournisseurKey);
+                role.FournisseurId = fabrique.KeyUIdRNo.UtilisateurId;
+                role.FournisseurRoleNo = fabrique.KeyUIdRNo.RoleNo;
             }
             return role;
         }
@@ -55,11 +56,6 @@ namespace KalosfideAPI.Roles
         {
             role.Nom = vue.Nom;
             role.Adresse = vue.Adresse;
-            if (vue.FournisseurId != null)
-            {
-                role.FournisseurId = vue.FournisseurId;
-                role.FournisseurRoleNo = vue.FournisseurNo;
-            }
         }
     }
 }

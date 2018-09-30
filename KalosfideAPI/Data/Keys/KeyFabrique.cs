@@ -51,5 +51,9 @@ namespace KalosfideAPI.Data.Keys
                 }
             }
         }
+        public static string CréeKey(params string[] segments)
+        {
+            return string.Join(AKeyString.Séparateur, segments);
+        }
     }    
 }

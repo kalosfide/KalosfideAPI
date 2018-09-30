@@ -20,7 +20,6 @@ namespace KalosfideAPI.Utilisateurs
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IJwtFabrique _jwtFabrique;
-        private readonly JwtFabriqueOptions _jwtOptions;
         private readonly IAuthorizationService _autorisation;
 
         private readonly IUtilisateurTransformation _transformation;
@@ -37,7 +36,6 @@ namespace KalosfideAPI.Utilisateurs
         {
             _userManager = userManager;
             _jwtFabrique = jwtFabrique;
-            _jwtOptions = jwtOptions.Value;
             _autorisation = autorisation;
             _service = service;
             _transformation = transformation;

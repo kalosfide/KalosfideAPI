@@ -8,16 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Data
 {
-    public class Commande
+    public class Commande: Keys.AKeyUIdRNoNo
     {
         // key
         [Required]
         [MaxLength(LongueurUtilisateurId.Max)]
-        public string UtilisateurId { get; set; }
+        public override string UtilisateurId { get; set; }
         [Required]
-        public int RoleNo { get; set; }
+        public override int RoleNo { get; set; }
         [Required]
-        public int No { get; set; }
+        public override long No { get; set; }
 
         // données
         [Required]

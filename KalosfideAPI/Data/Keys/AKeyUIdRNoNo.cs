@@ -13,6 +13,24 @@ namespace KalosfideAPI.Data.Keys
         public abstract int RoleNo { get; set; }
         public abstract long No { get; set; }
 
+        public string RoleKey
+        {
+            get
+            {
+                return UtilisateurId + Séparateur + RoleNo;
+            }
+            set
+            {
+                KeyFabrique fabrique = new KeyFabrique(value);
+                if (fabrique.KeyUIdRNo==null)
+                {
+                    throw new ArgumentException("Mausaise key");
+                }
+                UtilisateurId = fabrique.KeyUIdRNo.UtilisateurId;
+                RoleNo = fabrique.KeyUIdRNo.RoleNo;
+            }
+        }
+
         public override string Key
         {
             get

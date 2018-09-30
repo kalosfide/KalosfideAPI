@@ -21,6 +21,7 @@ namespace KalosfideAPI.Data
 
         // données
         public int Quantité { get; set; }
+        public decimal UnitésLivrées { get; set; }
 
         // navigation
         virtual public Commande Commande { get; set; }
