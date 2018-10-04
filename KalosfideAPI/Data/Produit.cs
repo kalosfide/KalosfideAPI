@@ -67,11 +67,7 @@ namespace KalosfideAPI.Data
             entité
                 .HasOne(produit => produit.Producteur)
                 .WithMany(producteur => producteur.Produits)
-                .HasForeignKey(produit => new
-                {
-                    produit.RoleId,
-                    produit.No
-                });
+                .HasForeignKey(produit => produit.RoleId);
 
             entité.ToTable("Produits");
         }
