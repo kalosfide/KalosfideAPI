@@ -1,4 +1,4 @@
-﻿using KalosfideAPI.Data.Enums;
+﻿using KalosfideAPI.Data.Constantes;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,15 +6,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KalosfideAPI.Data
 {
-    public static class LongueurUtilisateurId
-    {
-        public const int Max = 20; //  UInt64.MaxValue.ToString().Length;
-    }
 
     public class Utilisateur
     {
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
+        [MaxLength(LongueurMax.UtilisateurId)]
         public string UtilisateurId { get; set; }
 
         // données

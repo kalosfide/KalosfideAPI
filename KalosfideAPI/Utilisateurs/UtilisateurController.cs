@@ -18,25 +18,21 @@ namespace KalosfideAPI.Utilisateurs
     [Authorize]
     public class UtilisateurController : BaseController
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IJwtFabrique _jwtFabrique;
-        private readonly IAuthorizationService _autorisation;
+        protected readonly UserManager<ApplicationUser> _userManager;
+        protected readonly IJwtFabrique _jwtFabrique;
 
-        private readonly IUtilisateurTransformation _transformation;
-        private readonly IUtilisateurService _service;
+        protected readonly IUtilisateurTransformation _transformation;
+        protected readonly IUtilisateurService _service;
 
         public UtilisateurController(
             UserManager<ApplicationUser> userManager,
             IJwtFabrique jwtFabrique,
-            IOptions<JwtFabriqueOptions> jwtOptions,
-            IAuthorizationService autorisation,
             IUtilisateurService service,
             IUtilisateurTransformation transformation
         )
         {
             _userManager = userManager;
             _jwtFabrique = jwtFabrique;
-            _autorisation = autorisation;
             _service = service;
             _transformation = transformation;
             opérations = new List<Opération>
@@ -47,7 +43,7 @@ namespace KalosfideAPI.Utilisateurs
             };
         }
 
-        private ErreurDeModel ErreurDoublon(string code, string texte, string doublon)
+        protected ErreurDeModel ErreurDoublon(string code, string texte, string doublon)
         {
             return new ErreurDeModel
             {
@@ -56,7 +52,7 @@ namespace KalosfideAPI.Utilisateurs
             };
         }
          
-        private async Task<ErreurDeModel> NomExisteDéjà(ApplicationUser applicationUser)
+        protected async Task<ErreurDeModel> NomExisteDéjà(ApplicationUser applicationUser)
         {
             ApplicationUser existant = await _userManager.FindByNameAsync(applicationUser.UserName);
             if (existant != null && existant.Id != applicationUser.Id)
@@ -66,7 +62,7 @@ namespace KalosfideAPI.Utilisateurs
             return null;
         }
          
-        private async Task<ErreurDeModel> EmailExisteDéjà(ApplicationUser applicationUser)
+        protected async Task<ErreurDeModel> EmailExisteDéjà(ApplicationUser applicationUser)
         {
             ApplicationUser existant = await _userManager.FindByNameAsync(applicationUser.Email);
             if (existant != null && existant.Id != applicationUser.Id)
@@ -74,42 +70,6 @@ namespace KalosfideAPI.Utilisateurs
                 return ErreurDoublon("Email", "Email", applicationUser.Email);
             }
             return null;
-        }
-
-        // POST api/utilisateur/enregistre
-        [HttpPost("/api/utilisateur/enregistre")]
-        [ProducesResponseType(201)] // created
-        [ProducesResponseType(400)] // Bad request
-        [AllowAnonymous]
-        public async Task<IActionResult> Enregistre([FromBody]EnregistrementVue vue)
-        {
-
-            ApplicationUser applicationUser = new ApplicationUser
-            {
-                UserName = vue.Nom,
-                Email = vue.Email,
-            };
-
-            ErreurDeModel erreur = await NomExisteDéjà(applicationUser);
-            if (erreur == null)
-            {
-                erreur = await EmailExisteDéjà(applicationUser);
-            }
-            if (erreur != null)
-            {
-                erreur.AjouteAModelState(ModelState);
-                return BadRequest(ModelState);
-            }
-
-            RetourDeService<Utilisateur> retour = await _service.Enregistre(applicationUser, vue.Password);
-
-            if (retour.Ok)
-            {
-                Utilisateur utilisateur = retour.Entité;
-                return CreatedAtAction(nameof(Lit), new { id = utilisateur.UtilisateurId }, _transformation.CréeVue(utilisateur));
-            }
-
-            return SaveChangesActionResult(retour);
         }
 
         [HttpPost("Connecte")]
@@ -180,7 +140,7 @@ namespace KalosfideAPI.Utilisateurs
 
             _transformation.CopieVueDansDonnées(utilisateur, vue);
 
-            var retour = await _service.Update(utilisateur);
+            var retour = await _service.Edite(utilisateur);
 
             return SaveChangesActionResult(retour);
         }
@@ -197,7 +157,7 @@ namespace KalosfideAPI.Utilisateurs
             {
                 return NotFound();
             }
-            var retour = await _service.Delete(utilisateur);
+            var retour = await _service.Supprime(utilisateur);
 
             return SaveChangesActionResult(retour);
         }
@@ -226,7 +186,7 @@ namespace KalosfideAPI.Utilisateurs
                 return NotFound();
             }
 
-            var retour = await _service.ChangeRoleActif(utilisateur, role);
+            var retour = await _service.ChangeRole(utilisateur, role);
             if (retour.Ok)
             {
                 Utilisateur utilisateurAvecRoleSelectionné = await _service.UtilisateurAvecRoleSelectionné(user);
@@ -236,7 +196,7 @@ namespace KalosfideAPI.Utilisateurs
             return SaveChangesActionResult(retour);
         }
 
-        private async Task<ApplicationUser> ApplicationUserVérifié(string userName, string password)
+        protected async Task<ApplicationUser> ApplicationUserVérifié(string userName, string password)
         {
             if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
             {

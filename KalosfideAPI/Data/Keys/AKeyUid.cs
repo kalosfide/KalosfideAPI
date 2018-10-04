@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 namespace KalosfideAPI.Data.Keys
 {
     // classes dérivées: Utilisateur
-    public abstract class AKeyUId : AKeyString
+    public abstract class AKeyUId : AKeyBase
     {
         public abstract string UtilisateurId { get; set; }
-        public override string Key
+        public override string TexteKey
         {
             get
             {
                 return UtilisateurId;
             }
         }
-        public override bool EstSemblable(AKeyString donnée)
+        public override bool EstSemblable(AKeyBase donnée)
         {
             if (donnée is AKeyUId)
             {

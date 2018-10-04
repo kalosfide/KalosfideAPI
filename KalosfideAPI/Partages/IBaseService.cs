@@ -11,5 +11,6 @@ namespace KalosfideAPI.Partages
         Task<ErreurDeModel> Validation(T donnée);
         Task<RetourDeService<T>> Edite(T donnée);
         Task<RetourDeService<T>> Supprime(T donnée);
+        Task<RetourDeService<T>> SaveChangesAsync(T donnée);
     }
 }

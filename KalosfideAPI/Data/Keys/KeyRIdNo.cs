@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Data.Keys
 {
-    public class KeyUIdRNoNo : AKeyUIdRNoNo
+    public class KeyRIdNo : AKeyRIdNo
     {
-        public override string UtilisateurId { get; set; }
-        public override int RoleNo { get; set; }
+        public override string RoleId { get; set; }
         public override long No { get; set; }
     }
 }

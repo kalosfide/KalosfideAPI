@@ -5,41 +5,59 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Data.Keys
 {
-    public class KeyFabrique
+    public static class KeyFabrique
     {
-        public KeyUId KeyUId { get; private set; }
-        public KeyUIdRNo KeyUIdRNo { get; private set; }
-        public KeyUIdRNoNo KeyUIdRNoNo { get; private set; }
 
-        public KeyFabrique(string param)
+        private static List<AKeyBase> CréeKeys(string param)
         {
             if (param != null)
             {
                 try
                 {
-                    var t = param.Split(AKeyString.Séparateur);
+                    var t = param.Split(AKeyBase.Séparateur);
+                    int roleNo;
                     switch (t.Length)
                     {
                         case 1:
-                            KeyUId = new KeyUId
+                            return new List<AKeyBase>
                             {
+                                new KeyUId
+                                {
                                 UtilisateurId = t[0],
+                                }
                             };
-                            break;
                         case 2:
-                            KeyUIdRNo = new KeyUIdRNo
+                            if (int.TryParse(t[1], out roleNo))
                             {
-                                UtilisateurId = t[0],
-                                RoleNo = int.Parse(t[1])
-                            };
+                                return new List<AKeyBase>
+                                {
+                                    new KeyUIdRNo
+                                    {
+                                        UtilisateurId = t[0],
+                                        RoleNo = int.Parse(t[1])
+                                    },
+                                    new KeyRId
+                                    {
+                                        RoleId = param
+                                    }
+                                };
+                            }
                             break;
                         case 3:
-                            KeyUIdRNoNo = new KeyUIdRNoNo
+                            if (int.TryParse(t[1], out roleNo))
                             {
-                                UtilisateurId = t[0],
-                                RoleNo = int.Parse(t[1]),
-                                No = long.Parse(t[2])
-                            };
+                                if (long.TryParse(t[2], out long no))
+                                {
+                                    return new List<AKeyBase>
+                                    {
+                                        new KeyRIdNo
+                                        {
+                                            RoleId = t[0] + AKeyBase.Séparateur + roleNo,
+                                            No = no
+                                        }
+                                    };
+                                }
+                            }
                             break;
                         default:
                             break;
@@ -47,13 +65,93 @@ namespace KalosfideAPI.Data.Keys
                 }
                 catch (Exception)
                 {
-                    throw new ArgumentException("Mausaise key");
+                    // throw new ArgumentException("Mausaise key");
                 }
             }
+            return null;
         }
-        public static string CréeKey(params string[] segments)
+
+        public static KeyUId CréeKeyUId(string texteKey)
         {
-            return string.Join(AKeyString.Séparateur, segments);
+            var keys = CréeKeys(texteKey);
+            if (keys != null)
+            {
+                if (keys.Count == 1 && keys.ElementAt(0) is KeyUId)
+                {
+                    return keys.ElementAt(0) as KeyUId;
+                }
+            }
+            return null;
+        }
+
+        public static KeyUIdRNo CréeKeyUIdRNo(string texteKey)
+        {
+            var keys = CréeKeys(texteKey);
+            if (keys != null)
+            {
+                if (keys.Count == 2 && keys.ElementAt(0) is KeyUIdRNo)
+                {
+                    return keys.ElementAt(0) as KeyUIdRNo;
+                }
+            }
+            return null;
+        }
+
+        public static AKeyBase CréeKeyUIdOuUIdRNo(string texteKey)
+        {
+            var keys = CréeKeys(texteKey);
+            if (keys != null)
+            {
+                if ((keys.Count == 1 && keys.ElementAt(0) is KeyUId) || (keys.Count == 2 && keys.ElementAt(0) is KeyUIdRNo))
+                {
+                    return keys.ElementAt(0);
+                }
+            }
+            return null;
+        }
+
+        public static KeyRId CréeKeyRId(string texteKey)
+        {
+            var keys = CréeKeys(texteKey);
+            if (keys != null)
+            {
+                if (keys.Count == 2 && keys.ElementAt(1) is KeyRId)
+                {
+                    return keys.ElementAt(1) as KeyRId;
+                }
+            }
+            return null;
+        }
+
+        public static KeyRIdNo CréeKeyRIdNo(string texteKey)
+        {
+            var keys = CréeKeys(texteKey);
+            if (keys != null)
+            {
+                if (keys.Count == 1 && keys.ElementAt(0) is KeyRIdNo)
+                {
+                    return keys.ElementAt(0) as KeyRIdNo;
+                }
+            }
+            return null;
+        }
+
+        public static AKeyBase CréeKeyRIdOuRIdNo(string texteKey)
+        {
+            var keys = CréeKeys(texteKey);
+            if (keys != null)
+            {
+                if ((keys.Count == 2 && keys.ElementAt(1) is KeyRId) || (keys.Count == 1 && keys.ElementAt(0) is KeyRIdNo))
+                {
+                    return keys.ElementAt(0);
+                }
+            }
+            return null;
+        }
+
+        public static string CréeTexteKey(params string[] segments)
+        {
+            return string.Join(AKeyBase.Séparateur, segments);
         }
     }    
 }

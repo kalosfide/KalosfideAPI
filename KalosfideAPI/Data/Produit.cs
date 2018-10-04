@@ -6,14 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Data
 {
-    public class Produit: Keys.AKeyUIdRNoNo
+    public class Produit: Keys.AKeyRIdNo
     {
         // key
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
-        public override string UtilisateurId { get; set; }
-        [Required]
-        public override int RoleNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.RoleId)]
+        public override string RoleId { get; set; }
         [Required]
         public override long No { get; set; }
 
@@ -29,7 +27,7 @@ namespace KalosfideAPI.Data
         public bool QuantitéVautUnités { get; set; }
 
         // navigation
-        virtual public Role Producteur { get; set; }
+        virtual public Fournisseur Producteur { get; set; }
         virtual public ICollection<Prix> Prix { get; set; }
 
         // utiles
@@ -60,20 +58,19 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(donnée => new
             {
-                donnée.UtilisateurId,
-                donnée.RoleNo,
+                donnée.RoleId,
                 donnée.No
             });
 
             entité.HasIndex(donnée => donnée.Nom).IsUnique();
 
             entité
-                .HasOne(p => p.Producteur)
-                .WithMany(r => r.Produits)
-                .HasForeignKey(p => new
+                .HasOne(produit => produit.Producteur)
+                .WithMany(producteur => producteur.Produits)
+                .HasForeignKey(produit => new
                 {
-                    p.UtilisateurId,
-                    p.RoleNo
+                    produit.RoleId,
+                    produit.No
                 });
 
             entité.ToTable("Produits");

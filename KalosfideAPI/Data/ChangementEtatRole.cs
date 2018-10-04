@@ -4,14 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Data
 {
-    public class ChangementEtatRole
+    public class ChangementEtatRole: Keys.AKeyRId
     {
         // key
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
-        public string UtilisateurId { get; set; }
-        [Required]
-        public int RoleNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.RoleId)]
+        public override string RoleId { get; set; }
         [Required]
         public DateTime Date { get; set; }
 
@@ -29,19 +27,15 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(donnée => new
             {
-                donnée.UtilisateurId,
-                donnée.RoleNo,
+                donnée.RoleId,
                 donnée.Date
             });
 
             entité
                 .HasOne(cer => cer.Role)
                 .WithMany(r => r.ChangementsEtat)
-                .HasForeignKey(cer => new
-                {
-                    cer.UtilisateurId,
-                    cer.RoleNo
-                });
+                .HasForeignKey(cer => cer.RoleId)
+                .HasPrincipalKey(role => role.RoleId);
 
             entité.ToTable("JournalEtatRole");
         }

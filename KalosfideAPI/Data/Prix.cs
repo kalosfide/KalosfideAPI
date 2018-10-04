@@ -7,14 +7,12 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Data
 {
-    public class Prix : Keys.AKeyUIdRNoNo
+    public class Prix : Keys.AKeyRIdNo
     {
         // key
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
-        public override string UtilisateurId { get; set; }
-        [Required]
-        public override int RoleNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.RoleId)]
+        public override string RoleId { get; set; }
         [Required]
         public override long No { get; set; }
         [Required]
@@ -44,8 +42,7 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(donnée => new
             {
-                donnée.UtilisateurId,
-                donnée.RoleNo,
+                donnée.RoleId,
                 donnée.No,
                 donnée.Date
             });
@@ -55,8 +52,7 @@ namespace KalosfideAPI.Data
                 .WithMany(produit => produit.Prix)
                 .HasForeignKey(prix => new
                 {
-                    prix.UtilisateurId,
-                    prix.RoleNo,
+                    prix.RoleId,
                     prix.No
                 });
 

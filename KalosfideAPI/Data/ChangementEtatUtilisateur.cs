@@ -11,7 +11,7 @@ namespace KalosfideAPI.Data
     {
         // key
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
+        [MaxLength(Constantes.LongueurMax.UtilisateurId)]
         public string UtilisateurId { get; set; }
         [Required]
         public DateTime Date { get; set; }

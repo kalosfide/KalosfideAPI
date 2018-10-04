@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Partages.KeyString
 {
-    public class KeyStringService<T> : BaseService<T>, IKeyStringService<T> where T: AKeyString
+    public class KeyStringService<T> : BaseService<T>, IKeyStringService<T> where T: AKeyBase
     {
         protected readonly DbSet<T> _dbSet;
 
@@ -20,30 +20,23 @@ namespace KalosfideAPI.Partages.KeyString
             _dbSet = dbSet;
         }
 
-        public async Task<RetourDeService<T>> Ajoute(T donnée)
+        public void AjouteSansSauver(T donnée)
         {
             _dbSet.Add(donnée);
-            try
-            {
-                await _context.SaveChangesAsync();
-                return new RetourDeService<T>(donnée);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return new RetourDeService<T>(TypeRetourDeService.ConcurrencyError);
-            }
-            catch (Exception)
-            {
-                return new RetourDeService<T>(TypeRetourDeService.Indéterminé);
-            }
         }
 
-        public async Task<T> Lit(AKeyString key)
+        public async Task<RetourDeService<T>> Ajoute(T donnée)
         {
-            return await _dbSet.Where(entité => entité.Key == key.Key).FirstOrDefaultAsync();
+            AjouteSansSauver(donnée);
+            return await SaveChangesAsync(donnée);
         }
 
-        public async Task<List<T>> Liste(AKeyString key)
+        public async Task<T> Lit(AKeyBase key)
+        {
+            return await _dbSet.Where(entité => entité.TexteKey == key.TexteKey).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<T>> Liste(AKeyBase key)
         {
             return await _dbSet.Where(entité => key.EstSemblable(entité)).ToListAsync();
         }
@@ -82,45 +75,31 @@ namespace KalosfideAPI.Partages.KeyString
             return await _ListeAOptions(_dbSet, options).ToListAsync();
         }
 
-        public async Task<List<T>> ListeAOptions(AKeyString key, OptionsDeListe options)
+        public async Task<List<T>> ListeAOptions(AKeyBase key, OptionsDeListe options)
         {
             return await _ListeAOptions(_dbSet.Where(entité => key.EstSemblable(entité)), options).ToListAsync();
         }
 
-        public async Task<RetourDeService<T>> Edite(T donnée)
+        protected void _Edite(T donnée)
         {
             _context.Update(donnée);
-            try
-            {
-                await _context.SaveChangesAsync();
-                return new RetourDeService<T>(donnée);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return new RetourDeService<T>(TypeRetourDeService.ConcurrencyError);
-            }
-            catch (Exception)
-            {
-                return new RetourDeService<T>(TypeRetourDeService.Indéterminé);
-            }
+        }
+
+        public async Task<RetourDeService<T>> Edite(T donnée)
+        {
+            _Edite(donnée);
+            return await SaveChangesAsync(donnée);
+        }
+
+        protected void _Supprime(T donnée)
+        {
+            _context.Remove(donnée);
         }
 
         public async Task<RetourDeService<T>> Supprime(T donnée)
         {
-            _context.Remove(donnée);
-            try
-            {
-                await _context.SaveChangesAsync();
-                return new RetourDeService<T>(donnée);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return new RetourDeService<T>(TypeRetourDeService.ConcurrencyError);
-            }
-            catch (Exception)
-            {
-                return new RetourDeService<T>(TypeRetourDeService.Indéterminé);
-            }
+            _Supprime(donnée);
+            return await SaveChangesAsync(donnée);
         }
 
     }

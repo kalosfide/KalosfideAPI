@@ -1,5 +1,5 @@
 ﻿using KalosfideAPI.Data;
-using KalosfideAPI.Data.Enums;
+using KalosfideAPI.Data.Constantes;
 using KalosfideAPI.Partages;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -16,45 +16,28 @@ namespace KalosfideAPI.Roles
         {
         }
 
-        public async Task<List<Role>> Fournisseurs()
+        public new void AjouteSansSauver(Role role)
         {
-            return await _context.Role.Where(role => role.Type == TypeDeRole.Fournisseur.Code).ToListAsync();
+            base.AjouteSansSauver(role);
+            _ChangeEtat(role, EtatRole.Nouveau);
         }
 
-        public new async Task<RetourDeService<Role>> Ajoute(Role role)
-        {
-            RetourDeService<Role> retour = await base.Ajoute(role);
-            if (retour.Ok)
-            {
-                retour = await ChangeEtat(role, EtatRole.Nouveau);
-            }
-            return retour;
-        }
-
-        public async Task<RetourDeService<Role>> ChangeEtat(Role role, string état)
+        public void _ChangeEtat(Role role, string état)
         {
             ChangementEtatRole etatDeRole = new ChangementEtatRole
             {
-                UtilisateurId = role.UtilisateurId,
-                RoleNo = role.RoleNo,
+                RoleId = role.RoleId,
                 Date = DateTime.Now,
                 Etat = état
             };
             _context.JournalEtatRole.Add(etatDeRole);
             role.Etat = état;
-            try
-            {
-                await _context.SaveChangesAsync();
-                return new RetourDeService<Role>(role);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return new RetourDeService<Role>(TypeRetourDeService.ConcurrencyError);
-            }
-            catch (Exception)
-            {
-                return new RetourDeService<Role>(TypeRetourDeService.Indéterminé);
-            }
+        }
+
+        public async Task<RetourDeService<Role>> ChangeEtat(Role role, string état)
+        {
+            _ChangeEtat(role, état);
+            return await SaveChangesAsync(role);
         }
     }
 }

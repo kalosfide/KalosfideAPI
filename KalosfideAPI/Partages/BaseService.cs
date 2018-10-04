@@ -1,5 +1,7 @@
 ﻿using KalosfideAPI.Data;
 using KalosfideAPI.Erreurs;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Partages
@@ -21,5 +23,23 @@ namespace KalosfideAPI.Partages
             }
             return null;
         }
+
+        public async Task<RetourDeService<T>> SaveChangesAsync(T donnée)
+        {
+            try
+            {
+                await _context.SaveChangesAsync();
+                return new RetourDeService<T>(donnée);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return new RetourDeService<T>(TypeRetourDeService.ConcurrencyError);
+            }
+            catch (Exception)
+            {
+                return new RetourDeService<T>(TypeRetourDeService.Indéterminé);
+            }
+        }
+
     }
 }

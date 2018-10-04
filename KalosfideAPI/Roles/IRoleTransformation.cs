@@ -1,9 +1,9 @@
 ﻿using KalosfideAPI.Data;
-using KalosfideAPI.Partages;
+using KalosfideAPI.Partages.KeyString;
 
 namespace KalosfideAPI.Roles
 {
-    public interface IRoleTransformation : ITransformation<Role, RoleVue>
+    public interface IRoleTransformation : IKeyUIdRNoTransformation<Role, RoleVue>
     {
     }
 }

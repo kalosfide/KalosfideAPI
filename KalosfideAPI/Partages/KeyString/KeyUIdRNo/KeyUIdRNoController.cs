@@ -8,33 +8,32 @@ using System.Threading.Tasks;
 namespace KalosfideAPI.Partages.KeyString
 {
     public abstract class KeyUIdRNoController<T, TVue> : KeyStringController<T, TVue>
-        where T: AKeyUIdRNo where TVue: AKeyUIdRNoVue
+        where T: AKeyUIdRNo where TVue: AKeyUIdRNo
     {
         protected IKeyUIdRNoService<T> _service { get { return __service as IKeyUIdRNoService<T>; } }
-        protected ITransformation<T, TVue> _transformation { get { return __transformation; } }
+        protected IKeyUIdRNoTransformation<T, TVue> _transformation { get { return __transformation as IKeyUIdRNoTransformation<T, TVue>; } }
 
         public KeyUIdRNoController(
             IKeyUIdRNoService<T> service,
-            ITransformation<T,TVue> transformation
+            IKeyUIdRNoTransformation<T,TVue> transformation
             ) : base(service, transformation)
         {
             opérations.Add(new Opération { Nom = nameof(DernierNo) });
         }
 
-        public async Task<IActionResult> DernierNo(string key)
+        protected override AKeyBase CréeAKey(string texteKey)
         {
-            KeyUId aKey = null;
-            try
-            {
-                var keyFabrique = new KeyFabrique(key);
-                if (keyFabrique.KeyUId != null)
-                {
-                    aKey = keyFabrique.KeyUId;
-                }
-            }
-            catch (ArgumentException)
-            {
-            }
+            return KeyFabrique.CréeKeyUIdRNo(texteKey);
+        }
+
+        protected override AKeyBase CréeAKeyDeListe(string texteKey)
+        {
+            return KeyFabrique.CréeKeyUIdOuUIdRNo(texteKey);
+        }
+
+        public async Task<IActionResult> DernierNo(string texteKey)
+        {
+            KeyUId aKey = KeyFabrique.CréeKeyUId(texteKey);
             if (aKey == null)
             {
                 return BadRequest();

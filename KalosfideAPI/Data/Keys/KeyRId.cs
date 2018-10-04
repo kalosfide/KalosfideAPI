@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Data.Keys
 {
-    public class AKeyUIdRNoVue: KeyStringVue
+    public class KeyRId: AKeyRId
     {
+        public override string RoleId { get; set; }
     }
 }

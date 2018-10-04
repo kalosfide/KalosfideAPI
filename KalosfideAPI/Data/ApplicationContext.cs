@@ -23,6 +23,10 @@ namespace KalosfideAPI.Data
             Data.Role.CréeTable(builder);
             Data.ChangementEtatRole.CréeTable(builder);
 
+            Data.Administrateur.CréeTable(builder);
+            Data.Fournisseur.CréeTable(builder);
+            Data.Client.CréeTable(builder);
+
             // Tables de données
             SiteInfos.Initialisation.CréeTable(builder);
             Data.Commande.CréeTable(builder);
@@ -36,6 +40,10 @@ namespace KalosfideAPI.Data
 
         public DbSet<Role> Role { get; set; }
         public DbSet<ChangementEtatRole> JournalEtatRole { get; set; }
+
+        public DbSet<Administrateur> Administrateur { get; set; }
+        public DbSet<Fournisseur> Fournisseur { get; set; }
+        public DbSet<Client> Client { get; set; }
 
         public DbSet<SiteInfos.SiteInfo> SiteInfo { get; set; }
         public DbSet<Commande> Commande { get; set; }

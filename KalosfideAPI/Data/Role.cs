@@ -1,4 +1,4 @@
-﻿using KalosfideAPI.Data.Enums;
+﻿using KalosfideAPI.Data.Constantes;
 using KalosfideAPI.Data.Keys;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -10,60 +10,49 @@ namespace KalosfideAPI.Data
 {
     public class Role : AKeyUIdRNo
     {
-
         // key
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
+        [MaxLength(LongueurMax.UtilisateurId)]
         public override string UtilisateurId { get; set; }
         [Required]
         public override int RoleNo { get; set; }
 
         // données
-        [Required]
-        [StringLength(1)]
-        public string Type { get; set; }
+        [MaxLength(LongueurMax.RoleId)]
+        public string AdministrateurId { get; set; }
+        [MaxLength(LongueurMax.RoleId)]
+        public string FournisseurId { get; set; }
+        [MaxLength(LongueurMax.RoleId)]
+        public string ClientId { get; set; }
 
         [StringLength(1)]
         [DefaultValue(EtatRole.Nouveau)]
         public string Etat { get; set; }
-
-        [Required]
-        [MaxLength(200)]
-        public string Nom { get; set; }
-        [MaxLength(500)]
-        public string Adresse { get; set; }
-
-        [MaxLength(LongueurUtilisateurId.Max)]
-        public string FournisseurId { get; set; }
-        public long? FournisseurRoleNo { get; set; }
 
         // navigation
         virtual public Utilisateur Utilisateur { get; set; }
 
         virtual public ICollection<ChangementEtatRole> ChangementsEtat { get; set; }
 
-        virtual public Role Fournisseur { get; set; }
+        virtual public Administrateur Administrateur { get; set; }
 
-        [InverseProperty("Fournisseur")]
-        virtual public ICollection<Role> Clients { get; set; }
+        virtual public Fournisseur Fournisseur { get; set; }
 
-        [InverseProperty("Producteur")]
-        virtual public ICollection<Produit> Produits { get; set; }
-
-        [InverseProperty("Livreur")]
-        virtual public ICollection<Livraison> Livraisons { get; set; }
-
-        [InverseProperty("Client")]
-        virtual public ICollection<Commande> Commandes { get; set; }
+        virtual public Client Client { get; set; }
 
         // utiles
-        public bool EstFournisseur(Role client)
+        public string Type
         {
-            return UtilisateurId == client.FournisseurId && RoleNo == client.FournisseurRoleNo;
+            get
+            {
+                return ClientId ?? FournisseurId ?? AdministrateurId;
+            }
         }
-        public bool EstClient(Role fournisseur)
+        public void FixeType(string type)
         {
-            return FournisseurId == fournisseur.UtilisateurId && FournisseurRoleNo == fournisseur.RoleNo;
+            AdministrateurId = type == TypeDeRole.Administrateur.Code ? RoleId : null;
+            FournisseurId = type == TypeDeRole.Fournisseur.Code ? RoleId : null;
+            ClientId = type == TypeDeRole.Client.Code ? RoleId : null;
         }
 
         // création
@@ -79,12 +68,9 @@ namespace KalosfideAPI.Data
 
             entité.HasOne(r => r.Utilisateur).WithMany(u => u.Roles);
 
-            entité.HasIndex(donnée => donnée.Type);
-            entité.HasIndex(donnée => donnée.Nom);
-            entité.HasIndex(donnée => donnée.FournisseurId);
-
             entité.ToTable("Roles");
         }
 
     }
+
 }

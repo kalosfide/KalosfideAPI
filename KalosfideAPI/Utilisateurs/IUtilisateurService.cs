@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Utilisateurs
 {
-    public interface IUtilisateurService
+    public interface IUtilisateurService: IBaseService<Utilisateur>
     {
         Task<Utilisateur> UtilisateurAvecListeRoles(ApplicationUser applicationUser);
 
@@ -16,15 +16,17 @@ namespace KalosfideAPI.Utilisateurs
 
         Task<bool> NomUnique(string nom);
 
-        Task<RetourDeService<Utilisateur>> Enregistre(ApplicationUser applicationUser, string password);
+        Task<RetourDeService<Utilisateur>> CréeUtilisateur(ApplicationUser applicationUser, string password);
 
-        Task<RetourDeService<Utilisateur>> ChangeRoleActif(Utilisateur utilisateur, Role role);
+        void ChangeRoleSansSauver(Utilisateur utilisateur, Role role);
+        Task<RetourDeService<Utilisateur>> ChangeRole(Utilisateur utilisateur, Role role);
 
         Task<Utilisateur> Lit(string id);
 
         Task<List<Utilisateur>> Lit();
 
-        Task<RetourDeService<Utilisateur>> Update(Utilisateur utilisateur);
-        Task<RetourDeService<Utilisateur>> Delete(Utilisateur utilisateur);
-    }
+        Task<Utilisateur> UtilisateurDeUser(string userId);
+        Task<bool> PeutAjouterRole(Utilisateur utilisateur, Client client);
+        Task<bool> PeutAjouterRole(Utilisateur utilisateur, Fournisseur fournisseur);
+}
 }

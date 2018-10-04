@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Linq;
 
-namespace KalosfideAPI.Data.Enums
+namespace KalosfideAPI.Data.Constantes
 {
-    public static class EtatRole
+    public class EtatUtilisateur
     {
         public const string Nouveau = "N";
         public const string Actif = "A";
         public const string Inactif = "I";
         public const string Banni = "X";
-        public static bool EstEtatRole(string etat)
+        public static bool EstEtatDeRole(string etat)
         {
             return (new string[]
             {

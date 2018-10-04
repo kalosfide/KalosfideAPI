@@ -8,15 +8,13 @@ namespace KalosfideAPI.Data
 
         // key
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
-        public string CommandeUtilisateurId { get; set; }
-        public int CommandeRoleNo { get; set; }
-        public int CommandeNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.RoleId)]
+        public string CommandeClientId { get; set; }
+        public long CommandeNo { get; set; }
 
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
-        public string ProduitUtilisateurId { get; set; }
-        public int ProduitRoleNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.RoleId)]
+        public string ProduitFournisseurId { get; set; }
         public int ProduitNo { get; set; }
 
         // données
@@ -34,11 +32,9 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(donnée => new
             {
-                donnée.CommandeUtilisateurId,
-                donnée.CommandeRoleNo,
+                donnée.CommandeClientId,
                 donnée.CommandeNo,
-                donnée.ProduitUtilisateurId,
-                donnée.ProduitRoleNo,
+                donnée.ProduitFournisseurId,
                 donnée.ProduitNo
             });
 
@@ -47,14 +43,12 @@ namespace KalosfideAPI.Data
                 .WithMany(c => c.DétailCommandes)
                 .HasForeignKey(dc => new
                 {
-                    dc.CommandeUtilisateurId,
-                    dc.CommandeRoleNo,
+                    dc.CommandeClientId,
                     dc.CommandeNo
                 })
                 .HasPrincipalKey(c => new
                 {
-                    c.UtilisateurId,
-                    c.RoleNo,
+                    c.RoleId,
                     c.No
                 });
 
@@ -63,14 +57,12 @@ namespace KalosfideAPI.Data
                 .WithMany()
                 .HasForeignKey(dc => new
                 {
-                    dc.CommandeUtilisateurId,
-                    dc.CommandeRoleNo,
+                    dc.CommandeClientId,
                     dc.CommandeNo
                 })
                 .HasPrincipalKey(p => new
                 {
-                    p.UtilisateurId,
-                    p.RoleNo,
+                    p.RoleId,
                     p.No
                 })
                 .OnDelete(DeleteBehavior.ClientSetNull);

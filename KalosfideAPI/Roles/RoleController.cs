@@ -1,5 +1,5 @@
 ﻿using KalosfideAPI.Data;
-using KalosfideAPI.Data.Enums;
+using KalosfideAPI.Data.Constantes;
 using KalosfideAPI.Data.Keys;
 using KalosfideAPI.Erreurs;
 using KalosfideAPI.Partages.KeyString;
@@ -61,9 +61,9 @@ namespace KalosfideAPI.Roles
             return await base.DernierNo(param);
         }
 
-        private async Task<IActionResult> ChangeEtat(string key, string état, Func<Role, bool> peutChanger)
+        private async Task<IActionResult> ChangeEtat(string texteKey, string état, Func<Role, bool> peutChanger)
         {
-            AKeyString aKey = CréeAKey(key);
+            AKeyBase aKey = CréeAKey(texteKey);
             if (aKey == null)
             {
                 return BadRequest();
@@ -88,11 +88,11 @@ namespace KalosfideAPI.Roles
         private bool PeutChangerEtat(Role role)
         {
             var revendications = Sécurité.RevendicationsFabrique.Revendications(HttpContext.User);
-            if (role.Type == TypeDeRole.Fournisseur.Code)
+            if (role.FournisseurId != null)
             {
                 return revendications.EstAdministrateur;
             }
-            if (role.Type == TypeDeRole.Client.Code)
+            if (role.ClientId != null)
             {
                 return revendications.UtilisateurId == role.FournisseurId && revendications.EtatUtilisateur == EtatUtilisateur.Actif
                         && revendications.EtatRole == EtatRole.Actif;
@@ -100,20 +100,14 @@ namespace KalosfideAPI.Roles
             return false;
         }
 
-        public async Task<IActionResult> Accepte(string key)
+        public async Task<IActionResult> Accepte(string texteKey)
         {
-            return await ChangeEtat(key, EtatRole.Actif, PeutChangerEtat);
+            return await ChangeEtat(texteKey, EtatRole.Actif, PeutChangerEtat);
         }
 
-        public async Task<IActionResult> Refuse(string key)
+        public async Task<IActionResult> Refuse(string texteKey)
         {
-            return await ChangeEtat(key, EtatRole.Inactif, PeutChangerEtat);
-        }
-
-        public async Task<IActionResult> Fournisseurs()
-        {
-            var donnée = await _service.Fournisseurs();
-            return Ok(donnée);
+            return await ChangeEtat(texteKey, EtatRole.Inactif, PeutChangerEtat);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace KalosfideAPI.Data.Enums
+﻿namespace KalosfideAPI.Data.Constantes
 {
     public static class TypeDeRole
     {

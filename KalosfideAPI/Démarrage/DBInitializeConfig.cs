@@ -20,13 +20,12 @@ namespace KalosfideAPI.Démarrage
 
         private void Users()
         {
-            string password = "a";
             ApplicationUser admin = new ApplicationUser
             {
                 UserName = "admin",
                 Email = "admin@kalosfide.fr",
             };
-            var retour = _service.Enregistre(admin, password);
+//            var retour = _service.Enregistre(admin, password);
         }
 
     }

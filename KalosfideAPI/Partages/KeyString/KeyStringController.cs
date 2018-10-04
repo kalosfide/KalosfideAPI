@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace KalosfideAPI.Partages.KeyString
 {
     public abstract class KeyStringController<T, TVue> : BaseController
-        where T : AKeyString where TVue : KeyStringVue
+        where T : AKeyBase where TVue : AKeyBase
     {
         protected IKeyStringService<T> __service;
         protected ITransformation<T, TVue> __transformation;
@@ -30,29 +30,8 @@ namespace KalosfideAPI.Partages.KeyString
             };
         }
 
-        protected AKeyString CréeAKey(string key)
-        {
-            try
-            {
-                var keyFabrique = new KeyFabrique(key);
-                if (keyFabrique.KeyUId != null)
-                {
-                    return keyFabrique.KeyUId;
-                }
-                if (keyFabrique.KeyUIdRNo != null)
-                {
-                    return keyFabrique.KeyUIdRNo;
-                }
-                if (keyFabrique.KeyUIdRNoNo != null)
-                {
-                    return keyFabrique.KeyUIdRNoNo;
-                }
-            }
-            catch (ArgumentException)
-            {
-            }
-            return null;
-        }
+        protected abstract AKeyBase CréeAKey(string texteKey);
+        protected abstract AKeyBase CréeAKeyDeListe(string texteKey);
 
         public async Task<IActionResult> Ajoute(TVue vue)
         {
@@ -77,15 +56,15 @@ namespace KalosfideAPI.Partages.KeyString
 
             if (retour.Ok)
             {
-                return CreatedAtAction(nameof(Lit), vue.Key, vue);
+                return CreatedAtAction(nameof(Lit), vue.TexteKey, vue);
             }
 
             return SaveChangesActionResult(retour);
         }
 
-        public async Task<IActionResult> Lit(string key)
+        public async Task<IActionResult> Lit(string texteKey)
         {
-            AKeyString aKey = CréeAKey(key);
+            AKeyBase aKey = CréeAKey(texteKey);
             if (aKey == null)
             {
                 return BadRequest();
@@ -108,9 +87,9 @@ namespace KalosfideAPI.Partages.KeyString
             return Ok(vue);
         }
 
-        public async Task<IActionResult> Liste(string key)
+        public async Task<IActionResult> Liste(string texteKey)
         {
-            AKeyString aKey = CréeAKey(key);
+            AKeyBase aKey = CréeAKey(texteKey);
             if (aKey == null)
             {
                 return BadRequest();
@@ -133,9 +112,9 @@ namespace KalosfideAPI.Partages.KeyString
             return Ok(vue);
         }
 
-        public async Task<IActionResult> Liste(string key, OptionsDeListe options)
+        public async Task<IActionResult> Liste(string texteKey, OptionsDeListe options)
         {
-            AKeyString aKey = CréeAKey(key);
+            AKeyBase aKey = CréeAKey(texteKey);
             if (aKey == null)
             {
                 return BadRequest();
@@ -158,12 +137,12 @@ namespace KalosfideAPI.Partages.KeyString
             return Ok(vue);
         }
 
-        private async Task<IActionResult> _Liste(string key, OptionsDeListe options)
+        private async Task<IActionResult> _Liste(string texteKey, OptionsDeListe options)
         {
             var revendications = Sécurité.RevendicationsFabrique.Revendications(HttpContext.User);
             bool permis = revendications.EstAdministrateur;
             List<T> donnée = null;
-            if (key == null)
+            if (texteKey == null)
             {
                 if (!permis)
                 {
@@ -173,7 +152,7 @@ namespace KalosfideAPI.Partages.KeyString
             }
             else
             {
-                AKeyString aKey = CréeAKey(key);
+                AKeyBase aKey = CréeAKey(texteKey);
                 if (aKey == null)
                 {
                     return BadRequest();
@@ -199,7 +178,7 @@ namespace KalosfideAPI.Partages.KeyString
 
         public async Task<IActionResult> Edite(TVue vue)
         {
-            AKeyString aKey = vue;
+            AKeyBase aKey = vue;
             if (aKey == null)
             {
                 return BadRequest();
@@ -234,9 +213,9 @@ namespace KalosfideAPI.Partages.KeyString
             return SaveChangesActionResult(retour);
         }
 
-        public async Task<IActionResult> Supprime(string key)
+        public async Task<IActionResult> Supprime(string texteKey)
         {
-            AKeyString aKey = CréeAKey(key);
+            AKeyBase aKey = CréeAKey(texteKey);
             if (aKey == null)
             {
                 return BadRequest();

@@ -5,14 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Data
 {
-    public class Livraison: Keys.AKeyUIdRNoNo
+    public class Livraison: Keys.AKeyRIdNo
     {
         // key
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
-        public override string UtilisateurId { get; set; }
-        [Required]
-        public override int RoleNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.RoleId)]
+        public override string RoleId { get; set; }
         [Required]
         public override long No { get; set; }
 
@@ -22,7 +20,7 @@ namespace KalosfideAPI.Data
 
         // navigation
         virtual public ICollection<Commande> Commandes { get; set; }
-        virtual public Role Livreur { get; set; }
+        virtual public Fournisseur Livreur { get; set; }
 
         // création
         public static void CréeTable(ModelBuilder builder)
@@ -31,8 +29,7 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(donnée => new
             {
-                donnée.UtilisateurId,
-                donnée.RoleNo,
+                donnée.RoleId,
                 donnée.No
             });
 
@@ -43,8 +40,8 @@ namespace KalosfideAPI.Data
                 .WithMany(livreur => livreur.Livraisons)
                 .HasForeignKey(livraison => new
                 {
-                    livraison.UtilisateurId,
-                    livraison.RoleNo
+                    livraison.RoleId,
+                    livraison.No
                 });
 
             entité.ToTable("Livraisons");

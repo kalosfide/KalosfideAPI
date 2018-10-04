@@ -1,5 +1,5 @@
 ﻿using KalosfideAPI.Data;
-using KalosfideAPI.Data.Enums;
+using KalosfideAPI.Data.Constantes;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;

@@ -8,26 +8,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Data
 {
-    public class Commande: Keys.AKeyUIdRNoNo
+    public class Commande: Keys.AKeyRIdNo
     {
         // key
         [Required]
-        [MaxLength(LongueurUtilisateurId.Max)]
-        public override string UtilisateurId { get; set; }
-        [Required]
-        public override int RoleNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.RoleId)]
+        public override string RoleId { get; set; }
         [Required]
         public override long No { get; set; }
 
         // données
         [Required]
         public DateTime Date { get; set; }
-        [MaxLength(LongueurUtilisateurId.Max)]
-        public string LivraisonId { get; set; }
-        public int? LivraisonNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.RoleId)]
+        public string LivraisonRoleId { get; set; }
+        public long LivraisonNo { get; set; }
 
         // navigation
-        virtual public Role Client { get; set; }
+        virtual public Client Client { get; set; }
         virtual public Livraison Livraison { get; set; }
         virtual public ICollection<DétailCommande> DétailCommandes { get; set; }
 
@@ -38,8 +36,7 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(donnée => new
             {
-                donnée.UtilisateurId,
-                donnée.RoleNo,
+                donnée.RoleId,
                 donnée.No
             });
 
@@ -48,11 +45,7 @@ namespace KalosfideAPI.Data
             entité
                 .HasOne(c => c.Client)
                 .WithMany(cl => cl.Commandes)
-                .HasForeignKey(c => new
-                {
-                    c.UtilisateurId,
-                    c.RoleNo
-                });
+                .HasForeignKey(c => c.RoleId);
 
             entité.ToTable("Commandes");
         }

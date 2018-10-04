@@ -1,16 +1,24 @@
 ﻿using KalosfideAPI.Data;
+using KalosfideAPI.Data.Keys;
+using KalosfideAPI.Partages.KeyString;
 
 namespace KalosfideAPI.Produits
 {
-    public class ProduitVue
+    public class ProduitVue: AKeyRIdNo
     {
-        public long Id { get; set; }
+        // identité
+        public override string RoleId { get; set; }
+        public override long No { get; set; }
 
-        public long FournisseurId { get; set; }
-        public Role Fournisseur { get; set; }
-
+        // données
         public string Nom { get; set; }
         public string Description { get; set; }
+
+        public decimal Unité { get; set; }
+        public bool QuantitéVautUnités { get; set; }
+
+        // calculés
+        public decimal PrixUnitaire { get; set; }
         public bool Indisponible { get; set; }
     }
 }

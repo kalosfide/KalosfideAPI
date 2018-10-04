@@ -7,12 +7,12 @@ namespace KalosfideAPI.Data.Keys
 {
     // base des modéles (et des vues) des données crées par un Utilisateur
     // classes dérivées: Role
-    public abstract class AKeyUIdRNo : AKeyString
+    public abstract class AKeyUIdRNo : AKeyBase
     {
         public abstract string UtilisateurId { get; set; }
         public abstract int RoleNo { get; set; }
 
-        public string RoleKey
+        public string RoleId
         {
             get
             {
@@ -20,24 +20,24 @@ namespace KalosfideAPI.Data.Keys
             }
             set
             {
-                KeyFabrique fabrique = new KeyFabrique(value);
-                if (fabrique.KeyUIdRNo == null)
+                KeyUIdRNo key = KeyFabrique.CréeKeyUIdRNo(value);
+                if (key == null)
                 {
                     throw new ArgumentException("Mausaise key");
                 }
-                UtilisateurId = fabrique.KeyUIdRNo.UtilisateurId;
-                RoleNo = fabrique.KeyUIdRNo.RoleNo;
+                UtilisateurId = key.UtilisateurId;
+                RoleNo = key.RoleNo;
             }
         }
 
-        public override string Key
+        public override string TexteKey
         {
             get
             {
                 return UtilisateurId + Séparateur + RoleNo;
             }
         }
-        public override bool EstSemblable(AKeyString donnée)
+        public override bool EstSemblable(AKeyBase donnée)
         {
             if (donnée is AKeyUIdRNo)
             {
