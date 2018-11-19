@@ -7,8 +7,11 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace KalosfideAPI.Fournisseurs
 {
-    public class FournisseurVue : AKeyRId
+    public class FournisseurVue : AKeyUidRno
     {
-        public override string RoleId { get; set; }
+        public override string Uid { get; set; }
+        public override int Rno { get; set; }
+        public string Nom { get; set; }
+        public string Adresse { get; set; }
     }
 }

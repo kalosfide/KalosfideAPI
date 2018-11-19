@@ -8,12 +8,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KalosfideAPI.Data
 {
-    public class Client : AKeyRId
+    public class Client : AKeyUidRno
     {
         // key
         [Required]
-        [MaxLength(LongueurMax.RoleId)]
-        public override string RoleId { get; set; }
+        [MaxLength(LongueurMax.UId)]
+        public override string Uid { get; set; }
+        [Required]
+        public override int Rno { get; set; }
 
         [Required]
         [MaxLength(200)]
@@ -21,6 +23,7 @@ namespace KalosfideAPI.Data
         [MaxLength(500)]
         public string Adresse { get; set; }
 
+        [Required]
         [MaxLength(LongueurMax.RoleId)]
         public string FournisseurId { get; set; }
 
@@ -39,15 +42,15 @@ namespace KalosfideAPI.Data
         {
             var entité = builder.Entity<Client>();
 
-            entité.HasKey(donnée => donnée.RoleId);
+            entité.HasKey(uidRno =>  new { uidRno.Uid, uidRno.Rno });
 
             entité.HasOne(client => client.Fournisseur).WithMany(fournisseur => fournisseur.Clients);
 
             entité
                 .HasOne(client => client.Role)
-                .WithOne(role => role.Client)
-                .HasForeignKey<Client>(client => client.RoleId)
-                .HasPrincipalKey<Role>(role => role.ClientId);
+                .WithOne()
+                .HasForeignKey<Client>(uidRno =>  new { uidRno.Uid, uidRno.Rno })
+                .HasPrincipalKey<Role>(uidRno =>  new { uidRno.Uid, uidRno.Rno }).OnDelete(DeleteBehavior.ClientSetNull);
 
             entité.HasIndex(donnée => donnée.Nom);
             entité.HasIndex(donnée => donnée.FournisseurId);

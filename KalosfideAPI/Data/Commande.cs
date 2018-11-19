@@ -5,22 +5,25 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using KalosfideAPI.Data.Constantes;
 
 namespace KalosfideAPI.Data
 {
-    public class Commande: Keys.AKeyRIdNo
+    public class Commande: Keys.AKeyUidRnoNo
     {
         // key
         [Required]
-        [MaxLength(Constantes.LongueurMax.RoleId)]
-        public override string RoleId { get; set; }
+        [MaxLength(LongueurMax.UId)]
+        public override string Uid { get; set; }
+        [Required]
+        public override int Rno { get; set; }
         [Required]
         public override long No { get; set; }
 
         // données
         [Required]
         public DateTime Date { get; set; }
-        [MaxLength(Constantes.LongueurMax.RoleId)]
+        [MaxLength(LongueurMax.RoleId)]
         public string LivraisonRoleId { get; set; }
         public long LivraisonNo { get; set; }
 
@@ -36,7 +39,8 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(donnée => new
             {
-                donnée.RoleId,
+                donnée.Uid,
+                donnée.Rno,
                 donnée.No
             });
 
@@ -45,7 +49,7 @@ namespace KalosfideAPI.Data
             entité
                 .HasOne(c => c.Client)
                 .WithMany(cl => cl.Commandes)
-                .HasForeignKey(c => c.RoleId);
+                .HasForeignKey(c => new { c.Uid, c.Rno });
 
             entité.ToTable("Commandes");
         }

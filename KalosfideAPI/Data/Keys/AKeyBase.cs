@@ -7,10 +7,13 @@ namespace KalosfideAPI.Data.Keys
 {
     public abstract class AKeyBase
     {
-        public static string Séparateur = "/";
+        public static string Séparateur = "-";
         public abstract string TexteKey { get; }
 
         // vrai si même type dérivé et même texte clé
         public abstract bool EstSemblable(AKeyBase donnée);
+
+        public abstract KeyParam KeyParam { get; }
+        public abstract KeyParam KeyParamParent { get; }
     }
 }

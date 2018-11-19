@@ -7,8 +7,9 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace KalosfideAPI.Administrateurs
 {
-    public class AdministrateurVue: AKeyRId
+    public class AdministrateurVue: AKeyUidRno
     {
-        public override string RoleId { get; set; }
+        public override string Uid { get; set; }
+        public override int Rno { get; set; }
     }
 }

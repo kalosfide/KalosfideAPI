@@ -1,5 +1,6 @@
 ﻿using KalosfideAPI.Data;
-using KalosfideAPI.Partages.KeyString;
+using KalosfideAPI.Partages.KeyParams;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,10 +9,11 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Fournisseurs
 {
-    public class FournisseurService : KeyRIdService<Fournisseur>, IFournisseurService
+    public class FournisseurService : KeyUidRnoService<Fournisseur>, IFournisseurService
     {
-        public FournisseurService(ApplicationContext context, DbSet<Fournisseur> dbSet) : base(context, dbSet)
+        public FournisseurService(ApplicationContext context) : base(context)
         {
+            _dbSet = _context.Fournisseur;
         }
     }
 }

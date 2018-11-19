@@ -1,5 +1,5 @@
 ﻿using KalosfideAPI.Data;
-using KalosfideAPI.Partages.KeyString;
+using KalosfideAPI.Partages.KeyParams;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Produits
 {
-    public class ProduitService : KeyRIdNoService<Produit>, IProduitService
+    public class ProduitService : KeyUidRnoNoService<Produit>, IProduitService
     {
-        public ProduitService(ApplicationContext context, DbSet<Produit> dbSet) : base(context, dbSet)
+        public ProduitService(ApplicationContext context) : base(context)
         {
+            _dbSet = _context.Produit;
         }
     }
 }

@@ -25,14 +25,13 @@ namespace KalosfideAPI.Sécurité
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             var claims = context.User.Claims;
-            /*
-            Utilisateur utilisateurAvecRoleSelectionné = await _service.UtilisateurAvecRoleSelectionné(user);
-            JwtRéponse jwtRéponse = await _jwtFabrique.CréeReponse(user, utilisateurAvecRoleSelectionné);
-            var result = new OkObjectResult(jwtRéponse);
-            */
 
             await next(context);
 
+            claims = context.User.Claims;
+            if (context.User.Identity.IsAuthenticated)
+            {
+            }
             claims = context.User.Claims;
         }
     }

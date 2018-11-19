@@ -8,23 +8,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KalosfideAPI.Data
 {
-    public class Fournisseur: AKeyRId
+    public class Fournisseur: AKeyUidRno
     {
         // key
         [Required]
-        [MaxLength(LongueurMax.RoleId)]
-        public override string RoleId { get; set; }
+        [MaxLength(LongueurMax.UId)]
+        public override string Uid { get; set; }
+        [Required]
+        public override int Rno { get; set; }
 
         [Required]
         [MaxLength(200)]
         public string Nom { get; set; }
         [MaxLength(500)]
         public string Adresse { get; set; }
-
-        [MaxLength(200)]
-        public string NomSite { get; set; }
-        [MaxLength(200)]
-        public string Titre { get; set; }
 
         // navigation
         virtual public Role Role { get; set; }
@@ -40,18 +37,20 @@ namespace KalosfideAPI.Data
 
         // utiles
 
+        public Site Site { get => Role.Site; }
+
         // création
         public static void CréeTable(ModelBuilder builder)
         {
             var entité = builder.Entity<Fournisseur>();
 
-            entité.HasKey(donnée => donnée.RoleId);
+            entité.HasKey(donnée => new { donnée.Uid, donnée.Rno });
 
             entité
                 .HasOne(fournisseur => fournisseur.Role)
-                .WithOne(role => role.Fournisseur)
-                .HasForeignKey<Fournisseur>(fournisseur => fournisseur.RoleId)
-                .HasPrincipalKey<Role>(role => role.FournisseurId);
+                .WithOne()
+                .HasForeignKey<Fournisseur>(fournisseur => new { fournisseur.Uid, fournisseur.Rno })
+                .HasPrincipalKey<Role>(role => new { role.Uid, role.Rno });
 
             entité.HasIndex(donnée => donnée.Nom);
 

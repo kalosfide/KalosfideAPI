@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -18,29 +19,20 @@ namespace KalosfideAPI.Utilisateurs
     [Authorize]
     public class UtilisateurController : BaseController
     {
-        protected readonly UserManager<ApplicationUser> _userManager;
         protected readonly IJwtFabrique _jwtFabrique;
 
         protected readonly IUtilisateurTransformation _transformation;
         protected readonly IUtilisateurService _service;
 
         public UtilisateurController(
-            UserManager<ApplicationUser> userManager,
             IJwtFabrique jwtFabrique,
             IUtilisateurService service,
             IUtilisateurTransformation transformation
         )
         {
-            _userManager = userManager;
             _jwtFabrique = jwtFabrique;
             _service = service;
             _transformation = transformation;
-            opérations = new List<Opération>
-            {
-                new Opération { Nom = nameof(Lit) },
-                new Opération { Nom = nameof(Edite) },
-                new Opération { Nom = nameof(Supprime) },
-            };
         }
 
         protected ErreurDeModel ErreurDoublon(string code, string texte, string doublon)
@@ -54,7 +46,7 @@ namespace KalosfideAPI.Utilisateurs
          
         protected async Task<ErreurDeModel> NomExisteDéjà(ApplicationUser applicationUser)
         {
-            ApplicationUser existant = await _userManager.FindByNameAsync(applicationUser.UserName);
+            ApplicationUser existant = await _service.TrouveParNom(applicationUser.UserName);
             if (existant != null && existant.Id != applicationUser.Id)
             {
                 return ErreurDoublon("Nom", "Nom", applicationUser.UserName);
@@ -64,7 +56,7 @@ namespace KalosfideAPI.Utilisateurs
          
         protected async Task<ErreurDeModel> EmailExisteDéjà(ApplicationUser applicationUser)
         {
-            ApplicationUser existant = await _userManager.FindByNameAsync(applicationUser.Email);
+            ApplicationUser existant = await _service.TrouveParEmail(applicationUser.Email);
             if (existant != null && existant.Id != applicationUser.Id)
             {
                 return ErreurDoublon("Email", "Email", applicationUser.Email);
@@ -78,7 +70,7 @@ namespace KalosfideAPI.Utilisateurs
         [AllowAnonymous]
         public async Task<IActionResult> Connecte([FromBody]ConnectionVue connection)
         {
-            ApplicationUser user = await ApplicationUserVérifié(connection.UserName, connection.Password);
+            ApplicationUser user = await _service.ApplicationUserVérifié(connection.UserName, connection.Password);
             if (user == null)
             {
                 ErreurDeModel erreur = new ErreurDeModel
@@ -89,9 +81,27 @@ namespace KalosfideAPI.Utilisateurs
                 erreur.AjouteAModelState(ModelState);
                 return BadRequest(ModelState);
             }
-            Utilisateur utilisateurAvecRoleSelectionné = await _service.UtilisateurAvecRoleSelectionné(user);
-            JwtRéponse jwtRéponse = await _jwtFabrique.CréeReponse(user, utilisateurAvecRoleSelectionné);
-            return new OkObjectResult(jwtRéponse);
+            
+            return await Connecte(user, connection.Persistant);
+        }
+
+        protected async Task<IActionResult> Connecte(ApplicationUser user, bool persistant)
+        {
+            CarteUtilisateur carteUtilisateur = await _service.CréeCarteUtilisateur(user);
+            JwtRéponse jwtRéponse = await _jwtFabrique.CréeReponse(carteUtilisateur);
+            Request.HttpContext.Response.Headers.Add(JwtFabrique.NomJwtRéponse, JsonConvert.SerializeObject(jwtRéponse));
+            await _service.Connecte(user, persistant);
+            return new OkObjectResult(carteUtilisateur);
+        }
+
+        [HttpPost("deconnecte")]
+        [ProducesResponseType(200)] // Ok
+        [ProducesResponseType(400)] // Bad request
+        public async Task<IActionResult> Deconnecte()
+        {
+            await _service.Déconnecte();
+            
+            return Ok();
         }
 
         // GET api/utilisateur/?id
@@ -112,37 +122,9 @@ namespace KalosfideAPI.Utilisateurs
         [HttpGet]
         [ProducesResponseType(200)] // Ok
         [ProducesResponseType(404)] // Not found
-        public async Task<IActionResult> Lit()
+        public async Task<IActionResult> Liste()
         {
             return Ok(await _service.Lit());
-        }
-
-        // PUT api/utilisateur
-        [HttpPut]
-        [ProducesResponseType(204)] // no content
-        [ProducesResponseType(400)] // Bad request
-        [ProducesResponseType(404)] // Not found
-        public async Task<IActionResult> Edite(UtilisateurVue vue)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            Utilisateur utilisateur = _transformation.CréeDonnée(vue);
-
-            utilisateur = await _service.Lit(vue.UtilisateurId);
-
-            if (utilisateur == null)
-            {
-                return NotFound();
-            }
-
-            _transformation.CopieVueDansDonnées(utilisateur, vue);
-
-            var retour = await _service.Edite(utilisateur);
-
-            return SaveChangesActionResult(retour);
         }
 
         // DELETE api/utilisateur/5
@@ -160,61 +142,6 @@ namespace KalosfideAPI.Utilisateurs
             var retour = await _service.Supprime(utilisateur);
 
             return SaveChangesActionResult(retour);
-        }
-
-        [ProducesResponseType(200)] // Ok
-        [ProducesResponseType(404)] // Not found
-        [ProducesResponseType(400)] // Bad request
-        public async Task<IActionResult> ChangeRoleActif(int roleNo )
-        {
-            ApplicationUser user = await _userManager.GetUserAsync(HttpContext.User);
-
-            Utilisateur utilisateur = await _service.UtilisateurAvecListeRoles(user);
-
-            Role role = null;
-            foreach (Role r in utilisateur.Roles)
-            {
-                if (r.RoleNo == roleNo)
-                {
-                    role = r;
-                    break;
-                }
-            }
-
-            if (role == null)
-            {
-                return NotFound();
-            }
-
-            var retour = await _service.ChangeRole(utilisateur, role);
-            if (retour.Ok)
-            {
-                Utilisateur utilisateurAvecRoleSelectionné = await _service.UtilisateurAvecRoleSelectionné(user);
-                JwtRéponse jwtRéponse = await _jwtFabrique.CréeReponse(user, utilisateurAvecRoleSelectionné);
-                return new OkObjectResult(jwtRéponse);
-            }
-            return SaveChangesActionResult(retour);
-        }
-
-        protected async Task<ApplicationUser> ApplicationUserVérifié(string userName, string password)
-        {
-            if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
-            {
-                // get the user to verifty
-                ApplicationUser userToVerify = await _userManager.FindByNameAsync(userName);
-
-                if (userToVerify != null)
-                {
-                    // check the credentials
-                    if (await _userManager.CheckPasswordAsync(userToVerify, password))
-                    {
-                        return await Task.FromResult(userToVerify);
-                    }
-                }
-            }
-
-            // Credentials are invalid, or account doesn't exist
-            return await Task.FromResult<ApplicationUser>(null);
         }
     }
 }

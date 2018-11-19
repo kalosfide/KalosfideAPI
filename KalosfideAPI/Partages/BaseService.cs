@@ -24,6 +24,23 @@ namespace KalosfideAPI.Partages
             return null;
         }
 
+        public async Task<RetourDeService> SaveChangesAsync()
+        {
+            try
+            {
+                await _context.SaveChangesAsync();
+                return new RetourDeService(TypeRetourDeService.Ok);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return new RetourDeService<T>(TypeRetourDeService.ConcurrencyError);
+            }
+            catch (Exception)
+            {
+                return new RetourDeService<T>(TypeRetourDeService.Indéterminé);
+            }
+        }
+
         public async Task<RetourDeService<T>> SaveChangesAsync(T donnée)
         {
             try

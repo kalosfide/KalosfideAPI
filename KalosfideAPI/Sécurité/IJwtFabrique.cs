@@ -1,11 +1,11 @@
 ﻿using KalosfideAPI.Data;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Sécurité
 {
     public interface IJwtFabrique
     {
-        Task<JwtRéponse> CréeReponse(ApplicationUser user, Utilisateur utilisateurAvecRoleSelectionné);
+        Task<JwtRéponse> CréeReponse(CarteUtilisateur carteUtilisateur);
     }
 }

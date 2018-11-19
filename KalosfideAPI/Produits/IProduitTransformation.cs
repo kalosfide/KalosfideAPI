@@ -1,9 +1,9 @@
 ﻿using KalosfideAPI.Data;
-using KalosfideAPI.Partages.KeyString;
+using KalosfideAPI.Partages.KeyParams;
 
 namespace KalosfideAPI.Produits
 {
-    public interface IProduitTransformation: IKeyRIdNoTransformation<Produit, ProduitVue>
+    public interface IProduitTransformation: IKeyUidRnoNoTransformation<Produit, ProduitVue>
     {
     }
 }

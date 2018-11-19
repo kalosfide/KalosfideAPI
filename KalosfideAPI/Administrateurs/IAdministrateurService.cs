@@ -1,5 +1,5 @@
 ﻿using KalosfideAPI.Data;
-using KalosfideAPI.Partages.KeyString;
+using KalosfideAPI.Partages.KeyParams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Administrateurs
 {
-    public interface IAdministrateurService: IKeyRIdService<Administrateur>
+    public interface IAdministrateurService: IKeyUidRnoService<Administrateur>
     {
     }
 }

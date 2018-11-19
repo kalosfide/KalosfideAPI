@@ -1,5 +1,7 @@
 ﻿using KalosfideAPI.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,12 +17,13 @@ namespace KalosfideAPI.Sécurité
         public string Id;
         public string Jeton;
         public long ExpireDans;
-
-        public Revendications Revendications;
     }
 
     public class JwtFabrique : IJwtFabrique
     {
+
+        public static string NomJwtRéponse = "JwtBearer";
+
         private readonly JwtFabriqueOptions _jwtOptions;
 
         public JwtFabrique(IOptions<JwtFabriqueOptions> jwtOptions)
@@ -29,28 +32,27 @@ namespace KalosfideAPI.Sécurité
             ThrowIfInvalidOptions(_jwtOptions);
         }
 
-        public async Task<JwtRéponse> CréeReponse(ApplicationUser user, Utilisateur utilisateurAvecRoleSelectionné)
+        public async Task<JwtRéponse> CréeReponse(CarteUtilisateur carte)
         {
             List<Claim> claims = new List<Claim>
             {
-                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
-                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64),
+                new Claim(JwtRegisteredClaimNames.Sub, carte.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
+                new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64),
+                new Claim( JwtClaims.UserId, carte.UserId ),
+                new Claim( JwtClaims.UserName, carte.UserName),
+                new Claim( JwtClaims.UtilisateurId, carte.Uid),
+                new Claim(JwtClaims.EtatUtilisateur, carte.Etat),
+                new Claim( JwtClaims.Roles, carte.RolesSérialisés),
             };
-
-            List<Revendication> ListeRevendications = RevendicationsFabrique.ListeRevendications(utilisateurAvecRoleSelectionné);
-            ListeRevendications.ForEach(revendication => claims.Add(revendication.JwtClaim));
-
-            Revendications revendications = RevendicationsFabrique.Revendications(utilisateurAvecRoleSelectionné);
 
             string jeton = CréeJeton(claims);
 
             JwtRéponse jwtr = new JwtRéponse
             {
-                Id = user.Id,
+                Id = carte.UserId,
                 Jeton = jeton,
                 ExpireDans = (int)_jwtOptions.ValidFor.TotalSeconds,
-                Revendications = revendications
             };
             return jwtr;
         }

@@ -12,6 +12,7 @@ using KalosfideAPI.Fournisseurs;
 using KalosfideAPI.Partages;
 using KalosfideAPI.Roles;
 using KalosfideAPI.Sécurité;
+using KalosfideAPI.Sites;
 using KalosfideAPI.Utilisateurs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +28,8 @@ namespace KalosfideAPI.Enregistrement
         public ApplicationUser user;
         public Utilisateur Utilisateur;
         public Role Role;
+        public AKeyUidRno Entité;
+        public Site Site;
         public IActionResult ActionResult;
     }
 
@@ -37,29 +40,31 @@ namespace KalosfideAPI.Enregistrement
         private readonly IRoleService _roleService;
         private readonly IAdministrateurService _administrateurService;
         private readonly IFournisseurService _fournisseurService;
+        private readonly ISiteService _siteService;
         private readonly IClientService _clientService;
 
         public EnregistrementController(
-            UserManager<ApplicationUser> userManager, 
             IJwtFabrique jwtFabrique,
             IUtilisateurService service, 
             IUtilisateurTransformation transformation,
             IRoleService roleService,
             IAdministrateurService administrateurService,
             IFournisseurService fournisseurService,
+            ISiteService siteService,
             IClientService clientService
-            ) : base(userManager, jwtFabrique, service, transformation)
+            ) : base(jwtFabrique, service, transformation)
         {
             _roleService = roleService;
             _administrateurService = administrateurService;
             _fournisseurService = fournisseurService;
+            _siteService = siteService;
             _clientService = clientService;
         }
 
         private async Task<RésultatEnregistrement> CréeUtilisateur(string type, VueBase vue)
         {
             RésultatEnregistrement résultat = new RésultatEnregistrement();
-            ApplicationUser existant = await _userManager.FindByEmailAsync(vue.Email);
+            ApplicationUser existant = await _service.TrouveParEmail(vue.Email);
             if (existant == null)
             {
                 ApplicationUser applicationUser = new ApplicationUser
@@ -84,8 +89,10 @@ namespace KalosfideAPI.Enregistrement
             {
                 Utilisateur utilisateur = await _service.UtilisateurDeUser(existant.Id);
 
-                var revendications = RevendicationsFabrique.Revendications(HttpContext.User);
-                bool permis = (revendications.EstUtilisateurActif && revendications.UtilisateurId == utilisateur.UtilisateurId) || revendications.EstAdministrateur;
+                CarteUtilisateur carte = new CarteUtilisateur();
+                carte.PrendClaims(HttpContext.User);
+
+                bool permis = (carte.EstUtilisateurActif && carte.Uid == utilisateur.Uid) || carte.EstAdministrateur;
                 if (permis)
                 {
                     résultat.ACréé = false;
@@ -99,7 +106,7 @@ namespace KalosfideAPI.Enregistrement
                 }
                 else
                 {
-                    résultat.ActionResult = Forbid();
+                    résultat.ActionResult = StatusCode(403);
                 }
             }
             return résultat;
@@ -121,69 +128,99 @@ namespace KalosfideAPI.Enregistrement
             return false;
         }
 
-        private void CréeEntitéSansSauver(RésultatEnregistrement résultat, string type, VueBase vue)
+        private void CréeEntité(RésultatEnregistrement résultat, string type, VueBase vue)
         {
-            AKeyRId entité = null;
-            string roleId = résultat.Role.RoleId;
+            string uid = résultat.Role.Uid;
+            int rno = résultat.Role.Rno;
             switch (type)
             {
                 case TypeDeRole.Administrateur.Code:
-                    entité = (vue as AdministrateurVue).CréeAdministrateur();
-                    _administrateurService.AjouteSansSauver(entité as Administrateur);
-                    résultat.Role.AdministrateurId = roleId;
+                    résultat.Entité = (vue as AdministrateurVue).CréeAdministrateur();
                     break;
                 case TypeDeRole.Fournisseur.Code:
-                    entité = (vue as FournisseurVue).CréeFournisseur();
-                    _fournisseurService.AjouteSansSauver(entité as Fournisseur);
-                    résultat.Role.FournisseurId = roleId;
+                    résultat.Entité = (vue as FournisseurVue).CréeFournisseur();
+                    résultat.Site = (vue as FournisseurVue).CréeSite();
+                    résultat.Site.Uid = uid;
+                    résultat.Site.Rno = rno;
+                    résultat.Role.SiteUid = uid;
+                    résultat.Role.SiteRno = rno;
                     break;
                 case TypeDeRole.Client.Code:
-                    entité = (vue as ClientVue).CréeClient();
-                    _clientService.AjouteSansSauver(entité as Client);
-                    résultat.Role.ClientId = roleId;
+                    résultat.Entité = (vue as ClientVue).CréeClient();
+                    résultat.Role.SiteUid = (vue as ClientVue).SiteUid;
+                    résultat.Role.SiteRno = (vue as ClientVue).SiteRno;
                     break;
                 default:
                     break;
             }
-            if (entité != null)
+            résultat.Entité.Uid = uid;
+            résultat.Entité.Rno = rno;
+        }
+
+        private void AjouteEntitéSansSauver(RésultatEnregistrement résultat, string type)
+        {
+            switch (type)
             {
-                entité.RoleId = roleId;
+                case TypeDeRole.Administrateur.Code:
+                    _administrateurService.AjouteSansSauver(résultat.Entité as Administrateur);
+                    break;
+                case TypeDeRole.Fournisseur.Code:
+                    _fournisseurService.AjouteSansSauver(résultat.Entité as Fournisseur);
+                    _siteService.AjouteSansSauver(résultat.Site);
+                    break;
+                case TypeDeRole.Client.Code:
+                    _clientService.AjouteSansSauver(résultat.Entité as Client);
+                    break;
+                default:
+                    break;
             }
         }
 
         private async Task<IActionResult> Enregistre(string type, VueBase vue)
         {
-            RésultatEnregistrement résultat = await CréeUtilisateur(type, vue);
-
-            if (résultat.ActionResult != null)
+            RésultatEnregistrement résultat = null;
+            try
             {
-                return résultat.ActionResult;
+                résultat = await CréeUtilisateur(type, vue);
+
+                if (résultat.ActionResult != null)
+                {
+                    return résultat.ActionResult;
+                }
+
+                Utilisateur utilisateur = résultat.Utilisateur;
+
+                int roleNo = await _roleService.DernierNo(utilisateur.Uid) + 1;
+                Role role = new Role
+                {
+                    Uid = utilisateur.Uid,
+                    Rno = roleNo,
+                };
+                résultat.Role = role;
+
+                CréeEntité(résultat, type, vue);
+
+                _roleService.AjouteSansSauver(role);
+                AjouteEntitéSansSauver(résultat, type);
+
+                RetourDeService retour = await _service.SaveChangesAsync();
+                if (retour.Type != TypeRetourDeService.Ok && résultat.ACréé)
+                {
+                    await _service.Supprime(résultat.Utilisateur);
+                    return SaveChangesActionResult(retour);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (résultat != null && résultat.ACréé)
+                {
+                    await _service.Supprime(résultat.Utilisateur);
+                }
+                throw (ex);
             }
 
-            Utilisateur utilisateur = résultat.Utilisateur;
 
-            Role role = new Role
-            {
-                UtilisateurId = utilisateur.UtilisateurId,
-                RoleNo = await _roleService.DernierNo(new KeyUId { UtilisateurId = utilisateur.UtilisateurId }),
-            };
-            _roleService.AjouteSansSauver(role);
-            résultat.Role = role;
-
-            CréeEntitéSansSauver(résultat, type, vue);
-
-            _service.ChangeRoleSansSauver(utilisateur, role);
-
-            RetourDeService<Utilisateur> retour = await _service.SaveChangesAsync(utilisateur);
-
-            if (!retour.Ok && résultat.ACréé)
-            {
-                await _service.Supprime(résultat.Utilisateur);
-                return SaveChangesActionResult(retour);
-            }
-
-            JwtRéponse jwtRéponse = await _jwtFabrique.CréeReponse(résultat.user, utilisateur);
-            return new OkObjectResult(jwtRéponse);
+            return await Connecte(résultat.user, true);
         }
 
         [HttpPost("/api/enregistrement/administrateur")]
@@ -201,7 +238,7 @@ namespace KalosfideAPI.Enregistrement
         [AllowAnonymous]
         public async Task<IActionResult> Fournisseur(FournisseurVue vue)
         {
-            return await Enregistre(TypeDeRole.Administrateur.Code, vue);
+            return await Enregistre(TypeDeRole.Fournisseur.Code, vue);
         }
 
         [HttpPost("/api/enregistrement/client")]
@@ -210,7 +247,7 @@ namespace KalosfideAPI.Enregistrement
         [AllowAnonymous]
         public async Task<IActionResult> Client(ClientVue vue)
         {
-            return await Enregistre(TypeDeRole.Administrateur.Code, vue);
+            return await Enregistre(TypeDeRole.Client.Code, vue);
         }
 
     }

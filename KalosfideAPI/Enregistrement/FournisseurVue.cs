@@ -20,8 +20,15 @@ namespace KalosfideAPI.Enregistrement
             {
                 Nom = Nom,
                 Adresse = Adresse,
+            };
+        }
+
+        public Site CréeSite()
+        {
+            return new Site
+            {
                 NomSite = NomSite,
-                Titre = Titre
+                Titre = Titre,
             };
         }
 

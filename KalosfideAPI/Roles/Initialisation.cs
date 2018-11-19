@@ -14,7 +14,6 @@ namespace KalosfideAPI.Roles
         public static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<IRoleTransformation, RoleTransformation>();
         }
     }
 }

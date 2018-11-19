@@ -10,7 +10,7 @@ namespace KalosfideAPI.Utilisateurs
             return new UtilisateurVue
             {
                 UserId = utilisateur.UserId,
-                UtilisateurId = utilisateur.UtilisateurId,
+                UtilisateurId = utilisateur.Uid,
                 Nom = utilisateur.ApplicationUser.UserName,
                 Email = utilisateur.ApplicationUser.Email,
             };

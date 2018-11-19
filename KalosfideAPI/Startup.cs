@@ -41,6 +41,7 @@ namespace KalosfideAPI
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials()
+                    .WithExposedHeaders(JwtFabrique.NomJwtRéponse.ToLower())
                     .Build()
                 );
             });
@@ -67,10 +68,21 @@ namespace KalosfideAPI
 
             app.UseAuthentication();
 
-            app.UseMiddleware<FixeClaimsMiddelware>();
-
-            app.UseMvc();
-
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller}/{action}/{param?}"
+                    );
+                routes.MapRoute(
+                    name: "UidRno",
+                    template: "{controller}/{action}/{uid?}/{rno?}"
+                    );
+                routes.MapRoute(
+                    name: "Site",
+                    template: "{siteId}/{controller}/{action}/{uid?}/{rno?}"
+                    );
+            });
         }
     }
 }

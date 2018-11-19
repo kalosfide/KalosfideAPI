@@ -9,29 +9,30 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Roles
 {
-    public class RoleService : Partages.KeyString.KeyUIdRNoService<Role>, IRoleService
+    public class RoleService : Partages.KeyParams.KeyUidRnoService<Role>, IRoleService
     {
 
-        public RoleService(ApplicationContext context) : base(context, context.Role)
+        public RoleService(ApplicationContext context) : base(context)
         {
+            _dbSet = _context.Role;
         }
 
         public new void AjouteSansSauver(Role role)
         {
             base.AjouteSansSauver(role);
-            _ChangeEtat(role, EtatRole.Nouveau);
+            _ChangeEtat(role, TypeEtatRole.Nouveau);
         }
 
         public void _ChangeEtat(Role role, string état)
         {
-            ChangementEtatRole etatDeRole = new ChangementEtatRole
+            EtatRole etatDeRole = new EtatRole
             {
-                RoleId = role.RoleId,
+                Uid = role.Uid,
+                Rno = role.Rno,
                 Date = DateTime.Now,
                 Etat = état
             };
-            _context.JournalEtatRole.Add(etatDeRole);
-            role.Etat = état;
+            _context.EtatRole.Add(etatDeRole);
         }
 
         public async Task<RetourDeService<Role>> ChangeEtat(Role role, string état)

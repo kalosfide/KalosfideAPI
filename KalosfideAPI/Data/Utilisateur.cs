@@ -10,31 +10,37 @@ namespace KalosfideAPI.Data
     public class Utilisateur
     {
         [Required]
-        [MaxLength(LongueurMax.UtilisateurId)]
-        public string UtilisateurId { get; set; }
+        [MaxLength(LongueurMax.UId)]
+        public string Uid { get; set; }
 
         // données
-        [StringLength(1)]
-        [DefaultValue(EtatUtilisateur.Nouveau)]
-        public string Etat { get; set; }
-
         [Required]
         public string UserId { get; set; }
 
-        public int RoleSélectionnéNo { get; set; }
-
         // navigation
         virtual public ApplicationUser ApplicationUser { get; set; }
-        virtual public Role RoleSélectionné { get; set; }
+
         virtual public ICollection<Role> Roles { get; set; }
-        virtual public ICollection<ChangementEtatUtilisateur> ChangementsEtat { get; set; }
+        virtual public ICollection<EtatUtilisateur> Etats { get; set; }
+
+        // utiles
+        public string Etat
+        {
+            get
+            {
+                int nb = Etats.Count;
+                EtatUtilisateur[] etats = new EtatUtilisateur[nb];
+                Etats.CopyTo(etats, 0);
+                return etats[nb - 1].Etat;
+            }
+        }
 
         // création
         public static void CréeTable(ModelBuilder builder)
         {
             var entité = builder.Entity<Utilisateur>();
 
-            entité.HasKey(utilisateur => utilisateur.UtilisateurId);
+            entité.HasKey(utilisateur => utilisateur.Uid);
 
             entité.ToTable("Utilisateurs");
         }

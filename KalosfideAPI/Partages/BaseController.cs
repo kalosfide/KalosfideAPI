@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using KalosfideAPI.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,18 +8,6 @@ namespace KalosfideAPI.Partages
 {
     public abstract class BaseController : Controller
     {
-        protected List<Opération> opérations;
-
-        protected Opération Opération(string nomOpération)
-        {
-            return opérations.Find(o => o.Nom == nomOpération);
-        }
-
-        protected bool PermiseAuPropriétaire(string nomOpération)
-        {
-            Opération opération = Opération(nomOpération);
-            return opération != null ? opération.PermiseAuPropriétaire : false;
-        }
 
         public IActionResult SaveChangesActionResult(RetourDeService retour)
         {

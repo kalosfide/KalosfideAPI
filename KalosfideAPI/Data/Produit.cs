@@ -2,16 +2,20 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using KalosfideAPI.Data.Constantes;
 using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Data
 {
-    public class Produit: Keys.AKeyRIdNo
+    public class Produit: Keys.AKeyUidRnoNo
     {
         // key
         [Required]
-        [MaxLength(Constantes.LongueurMax.RoleId)]
-        public override string RoleId { get; set; }
+        [MaxLength(LongueurMax.UId)]
+        public override string Uid { get; set; }
+        [Required]
+        public override int Rno { get; set; }
         [Required]
         public override long No { get; set; }
 
@@ -22,6 +26,7 @@ namespace KalosfideAPI.Data
         [MaxLength(500)]
         public string Description { get; set; }
         [Required]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal Unité { get; set; }
         [DefaultValue(true)]
         public bool QuantitéVautUnités { get; set; }
@@ -56,18 +61,14 @@ namespace KalosfideAPI.Data
         {
             var entité = builder.Entity<Produit>();
 
-            entité.HasKey(donnée => new
-            {
-                donnée.RoleId,
-                donnée.No
-            });
+            entité.HasKey(donnée => new { donnée.Uid, donnée.Rno, donnée.No });
 
             entité.HasIndex(donnée => donnée.Nom).IsUnique();
 
             entité
                 .HasOne(produit => produit.Producteur)
                 .WithMany(producteur => producteur.Produits)
-                .HasForeignKey(produit => produit.RoleId);
+                .HasForeignKey(produit => new { produit.Uid, produit.Rno });
 
             entité.ToTable("Produits");
         }

@@ -12,8 +12,6 @@ namespace KalosfideAPI.Utilisateurs
     {
         public static void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IAuthorizationHandler, UtilisateurAutorisation>();
-
             services.AddScoped<IUtilisateurService, UtilisateurService>();
             services.AddScoped<IUtilisateurTransformation, UtilisateurTransformation>();
         }

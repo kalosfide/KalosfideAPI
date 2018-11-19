@@ -1,17 +1,13 @@
 ﻿using KalosfideAPI.Data;
-using KalosfideAPI.Partages.KeyString;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using KalosfideAPI.Partages.KeyParams;
 
 namespace KalosfideAPI.Administrateurs
 {
-    public class AdministrateurService : KeyRIdService<Administrateur>, IAdministrateurService
+    public class AdministrateurService : KeyUidRnoService<Administrateur>, IAdministrateurService
     {
-        public AdministrateurService(ApplicationContext context, DbSet<Administrateur> dbSet) : base(context, dbSet)
+        public AdministrateurService(ApplicationContext context) : base(context)
         {
+            _dbSet = context.Administrateur;
         }
     }
 }

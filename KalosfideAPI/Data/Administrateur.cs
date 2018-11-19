@@ -9,12 +9,14 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Data
 {
-    public class Administrateur : AKeyRId
+    public class Administrateur : AKeyUidRno
     {
         // key
         [Required]
-        [MaxLength(LongueurMax.RoleId)]
-        public override string RoleId { get; set; }
+        [MaxLength(LongueurMax.UId)]
+        public override string Uid { get; set; }
+        [Required]
+        public override int Rno { get; set; }
 
         // navigation
         virtual public Role Role { get; set; }
@@ -26,13 +28,13 @@ namespace KalosfideAPI.Data
         {
             var entité = builder.Entity<Administrateur>();
 
-            entité.HasKey(donnée => donnée.RoleId);
+            entité.HasKey(uidRno => new { uidRno.Uid, uidRno.Rno });
 
             entité
                 .HasOne(administrateur => administrateur.Role)
-                .WithOne(role => role.Administrateur)
-                .HasForeignKey<Administrateur>(administrateur => administrateur.RoleId)
-                .HasPrincipalKey<Role>(role => role.AdministrateurId);
+                .WithOne()
+                .HasForeignKey<Administrateur>(uidRno =>  new { uidRno.Uid, uidRno.Rno })
+                .HasPrincipalKey<Role>(uidRno =>  new { uidRno.Uid, uidRno.Rno });
 
             entité.ToTable("Administrateurs");
         }

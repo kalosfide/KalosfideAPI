@@ -6,23 +6,26 @@ using System.Threading.Tasks;
 namespace KalosfideAPI.Data.Keys
 {
     // classes dérivées: Utilisateur
-    public abstract class AKeyUId : AKeyBase
+    public abstract class AKeyUid : AKeyBase
     {
-        public abstract string UtilisateurId { get; set; }
+        public abstract string Uid { get; set; }
         public override string TexteKey
         {
             get
             {
-                return UtilisateurId;
+                return Uid;
             }
         }
         public override bool EstSemblable(AKeyBase donnée)
         {
-            if (donnée is AKeyUId)
+            if (donnée is AKeyUid)
             {
-                return (donnée as AKeyUId).UtilisateurId == UtilisateurId;
+                return (donnée as AKeyUid).Uid == Uid;
             }
             return false;
         }
+
+        public override KeyParam KeyParam => new KeyParam { Uid = Uid };
+        public override KeyParam KeyParamParent => null;
     }
 }

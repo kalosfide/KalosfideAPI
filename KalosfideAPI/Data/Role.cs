@@ -8,52 +8,47 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KalosfideAPI.Data
 {
-    public class Role : AKeyUIdRNo
+    public class Role : AKeyUidRno
     {
         // key
         [Required]
-        [MaxLength(LongueurMax.UtilisateurId)]
-        public override string UtilisateurId { get; set; }
+        [MaxLength(LongueurMax.UId)]
+        public override string Uid { get; set; }
         [Required]
-        public override int RoleNo { get; set; }
+        public override int Rno { get; set; }
 
-        // données
-        [MaxLength(LongueurMax.RoleId)]
-        public string AdministrateurId { get; set; }
-        [MaxLength(LongueurMax.RoleId)]
-        public string FournisseurId { get; set; }
-        [MaxLength(LongueurMax.RoleId)]
-        public string ClientId { get; set; }
-
-        [StringLength(1)]
-        [DefaultValue(EtatRole.Nouveau)]
-        public string Etat { get; set; }
+        [MaxLength(LongueurMax.UId)]
+        public string SiteUid { get; set; }
+        public int SiteRno { get; set; }
 
         // navigation
         virtual public Utilisateur Utilisateur { get; set; }
 
-        virtual public ICollection<ChangementEtatRole> ChangementsEtat { get; set; }
+        virtual public ICollection<EtatRole> Etats { get; set; }
 
-        virtual public Administrateur Administrateur { get; set; }
-
-        virtual public Fournisseur Fournisseur { get; set; }
-
-        virtual public Client Client { get; set; }
+        virtual public Site Site { get; set; }
 
         // utiles
-        public string Type
+        public KeyParam SiteParam
         {
             get
             {
-                return ClientId ?? FournisseurId ?? AdministrateurId;
+                return new KeyParam { Uid = SiteUid, Rno = SiteRno };
             }
         }
-        public void FixeType(string type)
+        public string Etat
         {
-            AdministrateurId = type == TypeDeRole.Administrateur.Code ? RoleId : null;
-            FournisseurId = type == TypeDeRole.Fournisseur.Code ? RoleId : null;
-            ClientId = type == TypeDeRole.Client.Code ? RoleId : null;
+            get
+            {
+                int nb = Etats.Count;
+                EtatRole[] etats = new EtatRole[nb];
+                Etats.CopyTo(etats, 0);
+                return etats[nb - 1].Etat;
+            }
         }
+        public bool EstAdministrateur { get => SiteUid == null; }
+        public bool EstFournisseur { get => SiteUid == Uid && SiteRno == Rno; }
+        public bool EstClient { get => !EstAdministrateur && !EstFournisseur; }
 
         // création
         public static void CréeTable(ModelBuilder builder)
@@ -62,11 +57,13 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(donnée => new
             {
-                donnée.UtilisateurId,
-                donnée.RoleNo
+                donnée.Uid,
+                donnée.Rno
             });
 
-            entité.HasOne(r => r.Utilisateur).WithMany(u => u.Roles);
+            entité.HasIndex(role => new { role.Uid, role.Rno, });
+
+            entité.HasOne(r => r.Utilisateur).WithMany(u => u.Roles).HasForeignKey(r => r.Uid).HasPrincipalKey(u => u.Uid);
 
             entité.ToTable("Roles");
         }

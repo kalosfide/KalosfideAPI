@@ -13,6 +13,7 @@ using KalosfideAPI.Data.Constantes;
 
 namespace KalosfideAPI.Utilisateurs
 {
+
     public class UtilisateurService : BaseService<Utilisateur>, IUtilisateurService
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -28,36 +29,6 @@ namespace KalosfideAPI.Utilisateurs
             _signInManager = signInManager;
             DValidation = _Validation;
         }
-
-        #region UtilisateurAvec
-
-        public async Task<Utilisateur> UtilisateurAvecListeRoles(ApplicationUser applicationUser)
-        {
-            return await _context.Utilisateur
-                .Where(u => u.UserId == applicationUser.Id)
-                .Include(u => u.Roles)
-                .FirstOrDefaultAsync();
-        }
-
-        public async Task<Utilisateur> UtilisateurAvecRoleSelectionné(ApplicationUser applicationUser)
-        {
-            return await _context.Utilisateur
-                .Where(u => u.UserId == applicationUser.Id)
-                .Include(u => u.RoleSélectionné)
-                .FirstOrDefaultAsync();
-        }
-
-        public async Task<Utilisateur> UtilisateurAvecRoleSelectionné(string userName)
-        {
-            ApplicationUser applicationUser = await _context.Users.Where(u => u.UserName == userName).FirstOrDefaultAsync();
-            if (applicationUser == null)
-            {
-                return null;
-            }
-            return await UtilisateurAvecRoleSelectionné(applicationUser);
-        }
-
-        #endregion // UtilisateurAvec
 
         #region Validation
 
@@ -87,50 +58,85 @@ namespace KalosfideAPI.Utilisateurs
 
         #endregion // Validation
 
-        public async Task<RetourDeService<Utilisateur>> Enregistre(ApplicationUser applicationUser, string password)
+        public async Task<ApplicationUser> TrouveParNom(string userName)
         {
-            try
+            return await _userManager.FindByNameAsync(userName);
+        }
+
+        public async Task<ApplicationUser> TrouveParEmail(string eMail)
+        {
+            return await _userManager.FindByEmailAsync(eMail);
+        }
+
+        public async Task<ApplicationUser> ApplicationUserVérifié(string userName, string password)
+        {
+            if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
             {
-                var identityResult = await _userManager.CreateAsync(applicationUser, password);
-                if (!identityResult.Succeeded)
+                // get the user to verifty
+                ApplicationUser userToVerify = await _userManager.FindByNameAsync(userName);
+
+                if (userToVerify != null)
                 {
-                    return new RetourDeService<Utilisateur>(TypeRetourDeService.IdentityError);
+                    // check the credentials
+                    if (await _userManager.CheckPasswordAsync(userToVerify, password))
+                    {
+                        return await Task.FromResult(userToVerify);
+                    }
                 }
-                await _context.SaveChangesAsync();
-                long Max;
-                if(await _context.Utilisateur.AnyAsync())
-                {
-                    Max = await _context.Utilisateur.MaxAsync(u => long.Parse(u.UtilisateurId)) + 1;
-                }
-                else
-                {
-                    Max = 1;
-                }
-                Utilisateur utilisateur = new Utilisateur
-                {
-                    UserId = applicationUser.Id,
-                    UtilisateurId = Max.ToString(),
-                    Etat = EtatUtilisateur.Nouveau
-                };
-                _context.Utilisateur.Add(utilisateur);
-                ChangementEtatUtilisateur changement = new ChangementEtatUtilisateur
-                {
-                    UtilisateurId = utilisateur.UtilisateurId,
-                    Etat = EtatUtilisateur.Nouveau,
-                    Date = DateTime.Now
-                };
-                _context.JournalEtatUtilisateur.Add(changement);
-                await _context.SaveChangesAsync();
-                return new RetourDeService<Utilisateur>(utilisateur);
             }
-            catch (DbUpdateConcurrencyException)
+
+            // Credentials are invalid, or account doesn't exist
+            return await Task.FromResult<ApplicationUser>(null);
+        }
+
+        public async Task Connecte(ApplicationUser user, bool persistant)
+        {
+            await _signInManager.SignInAsync(user, persistant);
+        }
+
+        public async Task Déconnecte()
+        {
+            await _signInManager.SignOutAsync();
+        }
+
+        public async Task<CarteUtilisateur> CréeCarteUtilisateur(ApplicationUser user)
+        {
+            var utilisateur = await _context.Utilisateur.Where(u => u.UserId == user.Id)
+                .Include(u => u.Roles)
+                .ThenInclude(r => r.Site)
+                .FirstOrDefaultAsync();
+
+            var sites = utilisateur.Roles.Select(role => role.Site).ToList();
+            CarteUtilisateur utilisation = new CarteUtilisateur
             {
-                return new RetourDeService<Utilisateur>(TypeRetourDeService.ConcurrencyError);
-            }
-            catch (Exception)
-            {
-                return new RetourDeService<Utilisateur>(TypeRetourDeService.Indéterminé);
-            }
+                UserId = user.Id,
+                UserName = user.UserName,
+                Uid = utilisateur.Uid,
+                Etat = utilisateur.Etat,
+                Roles = utilisateur.Roles.Select(role => new CarteRole
+                {
+                    Rno = role.Rno,
+                    Etat = role.Etat,
+                    NomSite = role.Site.NomSite
+                }).ToList()
+            };
+            return utilisation;
+        }
+
+        public async Task<bool> PeutAjouterRole(Utilisateur utilisateur, Client client)
+        {
+            var existe = await _context.Role.Where(role => role.Uid == utilisateur.Uid)
+                .Join(_context.Client, role => new { role.Uid, role.Rno }, client1 => new { client1.Uid, client1.Rno }, (role, client1) => client1)
+                .Where(client1 => client1.Nom == client.Nom && client1.FournisseurId == client.FournisseurId).AnyAsync();
+            return !existe;
+        }
+
+        public async Task<bool> PeutAjouterRole(Utilisateur utilisateur, Fournisseur fournisseur)
+        {
+            var existe = await _context.Role.Where(role => role.Uid == utilisateur.Uid)
+                .Join(_context.Client, role => new { role.Uid, role.Rno }, fournisseur1 => new { fournisseur1.Uid, fournisseur1.Rno }, (role, fournisseur1) => fournisseur1)
+                .Where(fournisseur1 => fournisseur1.Nom == fournisseur.Nom).AnyAsync();
+            return !existe;
         }
 
         public async Task<RetourDeService<Utilisateur>> CréeUtilisateur(ApplicationUser applicationUser, string password)
@@ -146,7 +152,7 @@ namespace KalosfideAPI.Utilisateurs
                 long Max;
                 if(await _context.Utilisateur.AnyAsync())
                 {
-                    Max = await _context.Utilisateur.MaxAsync(u => long.Parse(u.UtilisateurId)) + 1;
+                    Max = await _context.Utilisateur.MaxAsync(u => long.Parse(u.Uid)) + 1;
                 }
                 else
                 {
@@ -155,17 +161,16 @@ namespace KalosfideAPI.Utilisateurs
                 Utilisateur utilisateur = new Utilisateur
                 {
                     UserId = applicationUser.Id,
-                    UtilisateurId = Max.ToString(),
-                    Etat = EtatUtilisateur.Nouveau
+                    Uid = Max.ToString(),
                 };
                 _context.Utilisateur.Add(utilisateur);
-                ChangementEtatUtilisateur changement = new ChangementEtatUtilisateur
+                EtatUtilisateur changement = new EtatUtilisateur
                 {
-                    UtilisateurId = utilisateur.UtilisateurId,
-                    Etat = EtatUtilisateur.Nouveau,
+                    Uid = utilisateur.Uid,
+                    Etat = TypeEtatUtilisateur.Nouveau,
                     Date = DateTime.Now
                 };
-                _context.JournalEtatUtilisateur.Add(changement);
+                _context.EtatUtilisateur.Add(changement);
                 await _context.SaveChangesAsync();
                 return new RetourDeService<Utilisateur>(utilisateur);
             }
@@ -202,36 +207,6 @@ namespace KalosfideAPI.Utilisateurs
                 .ToListAsync();
         }
 
-        public async Task<RetourDeService<Utilisateur>> Edite(Utilisateur utilisateur)
-        {
-            _context.Update(utilisateur);
-            try
-            {
-                await _context.SaveChangesAsync();
-                return new RetourDeService<Utilisateur>(utilisateur);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return new RetourDeService<Utilisateur>(TypeRetourDeService.ConcurrencyError);
-            }
-            catch (Exception)
-            {
-                return new RetourDeService<Utilisateur>(TypeRetourDeService.Indéterminé);
-            }
-        }
-
-        public void ChangeRoleSansSauver(Utilisateur utilisateur, Role role)
-        {
-            utilisateur.RoleSélectionnéNo = role.RoleNo;
-            utilisateur.RoleSélectionné = role;
-        }
-
-        public async Task<RetourDeService<Utilisateur>> ChangeRole(Utilisateur utilisateur, Role role)
-        {
-            ChangeRoleSansSauver(utilisateur, role);
-            return await SaveChangesAsync(utilisateur);
-        }
-
         public async Task<RetourDeService<Utilisateur>> Supprime(Utilisateur utilisateur)
         {
             ApplicationUser applicationUser = await _userManager.FindByIdAsync(utilisateur.UserId);
@@ -242,14 +217,13 @@ namespace KalosfideAPI.Utilisateurs
 
         public async Task<RetourDeService<Utilisateur>> ChangeEtat(Utilisateur utilisateur, string état)
         {
-            ChangementEtatUtilisateur changement = new ChangementEtatUtilisateur
+            EtatUtilisateur changement = new EtatUtilisateur
             {
-                UtilisateurId = utilisateur.UtilisateurId,
+                Uid = utilisateur.Uid,
                 Date = DateTime.Now,
                 Etat = état
             };
-            _context.JournalEtatUtilisateur.Add(changement);
-            utilisateur.Etat = état;
+            _context.EtatUtilisateur.Add(changement);
             try
             {
                 await _context.SaveChangesAsync();
@@ -263,22 +237,6 @@ namespace KalosfideAPI.Utilisateurs
             {
                 return new RetourDeService<Utilisateur>(TypeRetourDeService.Indéterminé);
             }
-        }
-
-        public async Task<bool> PeutAjouterRole(Utilisateur utilisateur, Client client)
-        {
-            var existe = await _context.Role.Where(role => role.UtilisateurId == utilisateur.UtilisateurId)
-                .Join(_context.Client, role => role.ClientId, client1 => client1.RoleId, (role, client1) => client1)
-                .Where(client1 => client1.Nom == client.Nom && client1.FournisseurId == client.FournisseurId).AnyAsync();
-            return !existe;
-        }
-
-        public async Task<bool> PeutAjouterRole(Utilisateur utilisateur, Fournisseur fournisseur)
-        {
-            var existe = await _context.Role.Where(role => role.UtilisateurId == utilisateur.UtilisateurId)
-                .Join(_context.Client, role => role.ClientId, fournisseur1 => fournisseur1.RoleId, (role, fournisseur1) => fournisseur1)
-                .Where(fournisseur1 => fournisseur1.Nom == fournisseur.Nom).AnyAsync();
-            return !existe;
         }
 
     }

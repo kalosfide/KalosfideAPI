@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using KalosfideAPI.Data;
-using KalosfideAPI.Partages.KeyString;
+using KalosfideAPI.Partages.KeyParams;
 
 namespace KalosfideAPI.Produits
 {
-    public class ProduitTransformation : KeyRIdNoTransformation<Produit, ProduitVue>, IProduitTransformation
+    public class ProduitTransformation : KeyUidRnoNoTransformation<Produit, ProduitVue>, IProduitTransformation
     {
         public void CopieVueDansDonnées(Produit donnée, ProduitVue vue)
         {
@@ -29,9 +29,14 @@ namespace KalosfideAPI.Produits
             return vue;
         }
 
-        public IEnumerable<ProduitVue> CréeVues(IEnumerable<Produit> s)
+        public IEnumerable<ProduitVue> CréeVues(IEnumerable<Produit> produits)
         {
-            throw new System.NotImplementedException();
+            List<ProduitVue> vues = new List<ProduitVue>();
+            foreach (Produit donnée in produits)
+            {
+                vues.Add(CréeVue(donnée));
+            }
+            return vues;
         }
     }
 }

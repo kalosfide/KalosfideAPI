@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using KalosfideAPI.Data.Keys;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KalosfideAPI.Data
 {
@@ -8,22 +10,29 @@ namespace KalosfideAPI.Data
 
         // key
         [Required]
-        [MaxLength(Constantes.LongueurMax.RoleId)]
-        public string CommandeClientId { get; set; }
-        public long CommandeNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.UId)]
+        public string CommandeUid { get; set; }
+        [Required]
+        public int CommandeRno { get; set; }
+         [Required]
+       public long CommandeNo { get; set; }
 
         [Required]
-        [MaxLength(Constantes.LongueurMax.RoleId)]
-        public string ProduitFournisseurId { get; set; }
-        public int ProduitNo { get; set; }
+        [MaxLength(Constantes.LongueurMax.UId)]
+        public string ProduitUId { get; set; }
+        public int ProduitRno { get; set; }
+        public long ProduitNo { get; set; }
 
         // données
         public int Quantité { get; set; }
+        [Column(TypeName = "decimal(5,3)")]
         public decimal UnitésLivrées { get; set; }
 
         // navigation
         virtual public Commande Commande { get; set; }
         virtual public Produit Produit { get; set; }
+
+        // utiles
 
         // création
         public static void CréeTable(ModelBuilder builder)
@@ -32,39 +41,25 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(donnée => new
             {
-                donnée.CommandeClientId,
+                donnée.CommandeUid,
+                donnée.CommandeRno,
                 donnée.CommandeNo,
-                donnée.ProduitFournisseurId,
+                donnée.ProduitUId,
+                donnée.ProduitRno,
                 donnée.ProduitNo
             });
 
             entité
                 .HasOne(dc => dc.Commande)
                 .WithMany(c => c.DétailCommandes)
-                .HasForeignKey(dc => new
-                {
-                    dc.CommandeClientId,
-                    dc.CommandeNo
-                })
-                .HasPrincipalKey(c => new
-                {
-                    c.RoleId,
-                    c.No
-                });
+                .HasForeignKey(dc => new { dc.CommandeUid, dc.CommandeRno, dc.CommandeNo })
+                .HasPrincipalKey(c => new { c.Uid, c.Rno, c.No });
 
             entité
                 .HasOne(dc => dc.Produit)
                 .WithMany()
-                .HasForeignKey(dc => new
-                {
-                    dc.CommandeClientId,
-                    dc.CommandeNo
-                })
-                .HasPrincipalKey(p => new
-                {
-                    p.RoleId,
-                    p.No
-                })
+                .HasForeignKey(dc => new { dc.ProduitUId, dc.ProduitRno, dc.ProduitNo })
+                .HasPrincipalKey(p => new { p.Uid, p.Rno, p.No })
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entité.ToTable("DétailCommandes");

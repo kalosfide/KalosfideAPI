@@ -1,13 +1,14 @@
 ﻿using KalosfideAPI.Data;
 using KalosfideAPI.Data.Keys;
-using KalosfideAPI.Partages.KeyString;
+using KalosfideAPI.Partages.KeyParams;
 
 namespace KalosfideAPI.Produits
 {
-    public class ProduitVue: AKeyRIdNo
+    public class ProduitVue: AKeyUidRnoNo
     {
         // identité
-        public override string RoleId { get; set; }
+        public override string Uid { get; set; }
+        public override int Rno { get; set; }
         public override long No { get; set; }
 
         // données

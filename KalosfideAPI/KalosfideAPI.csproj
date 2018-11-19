@@ -9,10 +9,23 @@
     <Compile Remove="Migrations\20180905160455_InitialCreate.Designer.cs" />
     <Compile Remove="Migrations\20180906083145_InitialCreate.cs" />
     <Compile Remove="Migrations\20180906083145_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20180927164957_InitialCreate.cs" />
+    <Compile Remove="Migrations\20180927164957_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20181022143432_Initial.cs" />
+    <Compile Remove="Migrations\20181022143432_Initial.Designer.cs" />
+    <Compile Remove="Migrations\20181031084208_initial.cs" />
+    <Compile Remove="Migrations\20181031084208_initial.Designer.cs" />
+    <Compile Remove="Migrations\20181101053404_initial.cs" />
+    <Compile Remove="Migrations\20181101053404_initial.Designer.cs" />
+    <Compile Remove="Migrations\20181101065103_initial.cs" />
+    <Compile Remove="Migrations\20181101065103_initial.Designer.cs" />
+    <Compile Remove="Migrations\20181101065829_initial.cs" />
+    <Compile Remove="Migrations\20181101065829_initial.Designer.cs" />
+    <Compile Remove="Migrations\20181116172906_initial.cs" />
+    <Compile Remove="Migrations\20181116172906_initial.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

@@ -18,17 +18,18 @@ namespace KalosfideAPI.Data
             Data.ApplicationUser.CréeTable(builder);
 
             Data.Utilisateur.CréeTable(builder);
-            Data.ChangementEtatUtilisateur.CréeTable(builder);
+            Data.EtatUtilisateur.CréeTable(builder);
 
             Data.Role.CréeTable(builder);
-            Data.ChangementEtatRole.CréeTable(builder);
+            Data.EtatRole.CréeTable(builder);
+
+            Data.Site.CréeTable(builder);
 
             Data.Administrateur.CréeTable(builder);
             Data.Fournisseur.CréeTable(builder);
             Data.Client.CréeTable(builder);
 
             // Tables de données
-            SiteInfos.Initialisation.CréeTable(builder);
             Data.Commande.CréeTable(builder);
             Data.Livraison.CréeTable(builder);
             Data.Produit.CréeTable(builder);
@@ -37,16 +38,17 @@ namespace KalosfideAPI.Data
         }
 
         public DbSet<Utilisateur> Utilisateur { get; set; }
-        public DbSet<ChangementEtatUtilisateur> JournalEtatUtilisateur { get; set; }
+        public DbSet<EtatUtilisateur> EtatUtilisateur { get; set; }
 
         public DbSet<Role> Role { get; set; }
-        public DbSet<ChangementEtatRole> JournalEtatRole { get; set; }
+        public DbSet<EtatRole> EtatRole { get; set; }
+
+        public DbSet<Site> Site { get; set; }
 
         public DbSet<Administrateur> Administrateur { get; set; }
         public DbSet<Fournisseur> Fournisseur { get; set; }
         public DbSet<Client> Client { get; set; }
 
-        public DbSet<SiteInfos.SiteInfo> SiteInfo { get; set; }
         public DbSet<Commande> Commande { get; set; }
         public DbSet<DétailCommande> DétailCommande { get; set; }
         public DbSet<Livraison> Livraison { get; set; }

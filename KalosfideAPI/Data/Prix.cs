@@ -1,18 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using KalosfideAPI.Data.Constantes;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Data
 {
-    public class Prix : Keys.AKeyRIdNo
+    public class Prix : Keys.AKeyUidRnoNo
     {
         // key
         [Required]
-        [MaxLength(Constantes.LongueurMax.RoleId)]
-        public override string RoleId { get; set; }
+        [MaxLength(LongueurMax.UId)]
+        public override string Uid { get; set; }
+        [Required]
+        public override int Rno { get; set; }
         [Required]
         public override long No { get; set; }
         [Required]
@@ -20,7 +24,7 @@ namespace KalosfideAPI.Data
 
         // données
         [Required]
-        [DisplayFormat]
+        [Column(TypeName ="decimal(5,2)")]
         public decimal PrixUnitaire { get; set; }
 
         // navigation
@@ -40,21 +44,12 @@ namespace KalosfideAPI.Data
         {
             var entité = builder.Entity<Prix>();
 
-            entité.HasKey(donnée => new
-            {
-                donnée.RoleId,
-                donnée.No,
-                donnée.Date
-            });
+            entité.HasKey(donnée => new { donnée.Uid, donnée.Rno, donnée.No });
 
             entité
                 .HasOne(prix => prix.Produit)
                 .WithMany(produit => produit.Prix)
-                .HasForeignKey(prix => new
-                {
-                    prix.RoleId,
-                    prix.No
-                });
+                .HasForeignKey(donnée => new { donnée.Uid, donnée.Rno, donnée.No });
 
             entité.ToTable("PrixDesProduits");
         }
