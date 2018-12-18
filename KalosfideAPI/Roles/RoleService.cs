@@ -9,12 +9,18 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Roles
 {
-    public class RoleService : Partages.KeyParams.KeyUidRnoService<Role>, IRoleService
+    public class RoleService : Partages.KeyParams.KeyUidRnoService<Role, RoleVue>, IRoleService
     {
 
         public RoleService(ApplicationContext context) : base(context)
         {
             _dbSet = _context.Role;
+            _inclutRelations = Complète;
+        }
+
+        IQueryable<Role> Complète(IQueryable<Role> données)
+        {
+            return données.Include(d => d.Site);
         }
 
         public new void AjouteSansSauver(Role role)
@@ -39,6 +45,28 @@ namespace KalosfideAPI.Roles
         {
             _ChangeEtat(role, état);
             return await SaveChangesAsync(role);
+        }
+
+        public override Role NouvelleDonnée()
+        {
+            return new Role();
+        }
+
+        public override RoleVue CréeVue(Role donnée)
+        {
+            RoleVue vue = new RoleVue
+            {
+                SiteUid = donnée.SiteUid,
+                SiteRno = donnée.SiteRno,
+                NomSite = donnée.Site.NomSite,
+            };
+            FixeVueKey(donnée, vue);
+            return vue;
+        }
+
+        public override Task CopieVueDansDonnées(Role donnée, RoleVue vue)
+        {
+            return Task.CompletedTask;
         }
     }
 }

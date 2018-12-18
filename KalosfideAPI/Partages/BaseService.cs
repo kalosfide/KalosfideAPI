@@ -1,17 +1,27 @@
 ﻿using KalosfideAPI.Data;
 using KalosfideAPI.Erreurs;
+using KalosfideAPI.Partages.KeyParams;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Partages
 {
     public delegate Task<ErreurDeModel> DValidation<T>(T donnée) where T : class;
+    public delegate bool ValideFiltre<T>(T t);
+    public delegate TVue Transforme<T, TVue>(T t);
+    public delegate IQueryable<T> InclutRelations<T>(IQueryable<T> queryT);
 
-    public class BaseService<T> where T : class
+    public abstract class BaseService<T, TVue> : IBaseService<T, TVue> where T : class where TVue : class
     {
         public DValidation<T> DValidation;
         protected ApplicationContext _context;
+        public abstract TVue CréeVue(T donnée);
+
+        public abstract T CréeDonnée(TVue vue);
+        public abstract Task CopieVueDansDonnées(T donnée, TVue vue);
 
         protected BaseService(ApplicationContext context) { _context = context; }
 
@@ -57,6 +67,5 @@ namespace KalosfideAPI.Partages
                 return new RetourDeService<T>(TypeRetourDeService.Indéterminé);
             }
         }
-
     }
 }

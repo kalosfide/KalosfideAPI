@@ -7,6 +7,11 @@ namespace KalosfideAPI.Data.Keys
 {
     public class KeyUid : AKeyUid
     {
+        public KeyUid(KeyParam param)
+        {
+            Uid = param.Uid;
+        }
+
         public override string Uid { get; set; }
     }
 }

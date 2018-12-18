@@ -65,6 +65,8 @@ namespace KalosfideAPI.Data
 
             entité.HasOne(r => r.Utilisateur).WithMany(u => u.Roles).HasForeignKey(r => r.Uid).HasPrincipalKey(u => u.Uid);
 
+            entité.HasOne(r => r.Site).WithMany(s => s.Usagers).HasForeignKey(r => new { r.SiteUid, r.SiteRno }).HasPrincipalKey(s => new { s.Uid, s.Rno });
+
             entité.ToTable("Roles");
         }
 

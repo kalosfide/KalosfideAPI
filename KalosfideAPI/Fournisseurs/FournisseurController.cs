@@ -19,15 +19,11 @@ namespace KalosfideAPI.Fournisseurs
     [Authorize]
     public class FournisseurController: KeyUidRnoController<Fournisseur, FournisseurVue>
     {
-        public FournisseurController(
-            IFournisseurService service,
-            IFournisseurTransformation transformation
-        ) : base(service, transformation)
+        public FournisseurController(IFournisseurService service) : base(service)
         {
         }
 
         private IFournisseurService _service { get => __service as IFournisseurService; }
-        private IFournisseurTransformation _transformation { get => __transformation as IFournisseurTransformation; }
 
         protected override bool LitEstPermis(CarteUtilisateur carte, KeyParam param)
         {

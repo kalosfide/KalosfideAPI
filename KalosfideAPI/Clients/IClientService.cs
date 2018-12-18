@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Clients
 {
-    public interface IClientService : IKeyUidRnoService<Client>
+    public interface IClientService : IKeyUidRnoService<Client, ClientVue>
     {
     }
 }

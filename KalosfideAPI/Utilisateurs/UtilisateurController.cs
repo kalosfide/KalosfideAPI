@@ -3,13 +3,8 @@ using KalosfideAPI.Erreurs;
 using KalosfideAPI.Partages;
 using KalosfideAPI.Sécurité;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Utilisateurs
@@ -21,18 +16,15 @@ namespace KalosfideAPI.Utilisateurs
     {
         protected readonly IJwtFabrique _jwtFabrique;
 
-        protected readonly IUtilisateurTransformation _transformation;
         protected readonly IUtilisateurService _service;
 
         public UtilisateurController(
             IJwtFabrique jwtFabrique,
-            IUtilisateurService service,
-            IUtilisateurTransformation transformation
+            IUtilisateurService service
         )
         {
             _jwtFabrique = jwtFabrique;
             _service = service;
-            _transformation = transformation;
         }
 
         protected ErreurDeModel ErreurDoublon(string code, string texte, string doublon)
@@ -88,6 +80,17 @@ namespace KalosfideAPI.Utilisateurs
         protected async Task<IActionResult> Connecte(ApplicationUser user, bool persistant)
         {
             CarteUtilisateur carteUtilisateur = await _service.CréeCarteUtilisateur(user);
+
+            if (!carteUtilisateur.EstUtilisateurActif)
+            {
+                ErreurDeModel erreur = new ErreurDeModel
+                {
+                    Code = "etatUtilisateur",
+                    Description = "Cet utilisateur n'est pas autorisé"
+                };
+                return StatusCode(403, erreur);
+            }
+
             JwtRéponse jwtRéponse = await _jwtFabrique.CréeReponse(carteUtilisateur);
             Request.HttpContext.Response.Headers.Add(JwtFabrique.NomJwtRéponse, JsonConvert.SerializeObject(jwtRéponse));
             await _service.Connecte(user, persistant);

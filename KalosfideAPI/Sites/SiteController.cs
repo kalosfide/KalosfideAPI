@@ -23,10 +23,7 @@ namespace KalosfideAPI.Sites
     {
         private ISiteService _service { get => __service as ISiteService; }
 
-        public SiteController(
-            ISiteService service,
-            ISiteTransformation transformation
-        ) : base(service, transformation)
+        public SiteController(ISiteService service) : base(service)
         {
         }
 
@@ -51,9 +48,9 @@ namespace KalosfideAPI.Sites
             return await base.Liste();
         }
 
-        protected override bool EditeEstPermis(CarteUtilisateur carte, KeyParam param)
+        protected override Task<bool> EditeEstPermis(CarteUtilisateur carte, KeyParam param)
         {
-            return carte.EstAdministrateur || carte.EstPropriétaire(param);
+            return Task.FromResult(carte.EstAdministrateur || carte.EstPropriétaire(param));
         }
         [HttpPut("/api/site/edite/{uid?}/{rno?}")]
         public new async Task<IActionResult> Edite(SiteVue vue)
@@ -74,5 +71,42 @@ namespace KalosfideAPI.Sites
             }
             return Ok(site);
         }
+
+        [HttpGet("/api/site/nomPris/{nomSite}")]
+        [ProducesResponseType(200)] // Ok
+        [ProducesResponseType(404)] // Not found
+        [AllowAnonymous]
+        public async Task<IActionResult> NomPris(string nomSite)
+        {
+            return Ok(await _service.NomPris(nomSite));
+        }
+
+        [HttpGet("/api/site/nomPrisParAutre/{nomSite}")]
+        [ProducesResponseType(200)] // Ok
+        [ProducesResponseType(404)] // Not found
+        [AllowAnonymous]
+        public async Task<IActionResult> NomPrisParAutre([FromQuery] KeyUidRno key, string nomSite)
+        {
+            return Ok(await _service.NomPrisParAutre(key, nomSite));
+        }
+
+        [HttpGet("/api/site/titrePris/{titre}")]
+        [ProducesResponseType(200)] // Ok
+        [ProducesResponseType(404)] // Not found
+        [AllowAnonymous]
+        public async Task<IActionResult> TitrePris(string titre)
+        {
+            return Ok(await _service.TitrePris(titre));
+        }
+
+        [HttpGet("/api/site/titrePrisParAutre/{titre}")]
+        [ProducesResponseType(200)] // Ok
+        [ProducesResponseType(404)] // Not found
+        [AllowAnonymous]
+        public async Task<IActionResult> TitrePrisParAutre([FromQuery] KeyUidRno key, string titre)
+        {
+            return Ok(await _service.TitrePrisParAutre(key, titre));
+        }
+
     }
 }

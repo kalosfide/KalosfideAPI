@@ -33,7 +33,7 @@ namespace KalosfideAPI.Roles
         [ProducesResponseType(404)] // not found
         public async Task<IActionResult> ChangeEtat([FromQuery] KeyUidRno param, [FromBody] string etat)
         {
-            if (!TypeEtatRole.EstEtatRole(etat))
+            if (!TypeEtatRole.EstValide(etat))
             {
                 return BadRequest();
             }

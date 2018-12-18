@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Fournisseurs
 {
-    public interface IFournisseurService : IKeyUidRnoService<Fournisseur>
+    public interface IFournisseurService : IKeyUidRnoService<Fournisseur, FournisseurVue>
     {
     }
 }

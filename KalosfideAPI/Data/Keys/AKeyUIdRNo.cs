@@ -29,6 +29,11 @@ namespace KalosfideAPI.Data.Keys
             return false;
         }
 
+        public override bool EstSemblable(KeyParam param)
+        {
+            return Uid == param.Uid && Rno == param.Rno;
+        }
+
         public override KeyParam KeyParam => new KeyParam { Uid = Uid, Rno = Rno };
         public override KeyParam KeyParamParent => new KeyParam { Uid = Uid };
     }

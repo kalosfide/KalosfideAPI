@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Administrateurs
 {
-    public interface IAdministrateurService: IKeyUidRnoService<Administrateur>
+    public interface IAdministrateurService: IKeyUidRnoService<Administrateur, AdministrateurVue>
     {
     }
 }

@@ -23,14 +23,8 @@ namespace KalosfideAPI.Data
         [MaxLength(500)]
         public string Adresse { get; set; }
 
-        [Required]
-        [MaxLength(LongueurMax.RoleId)]
-        public string FournisseurId { get; set; }
-
         // navigation
         virtual public Role Role { get; set; }
-
-        virtual public Fournisseur Fournisseur { get; set; }
 
         [InverseProperty("Client")]
         virtual public ICollection<Commande> Commandes { get; set; }
@@ -44,16 +38,13 @@ namespace KalosfideAPI.Data
 
             entité.HasKey(uidRno =>  new { uidRno.Uid, uidRno.Rno });
 
-            entité.HasOne(client => client.Fournisseur).WithMany(fournisseur => fournisseur.Clients);
-
             entité
                 .HasOne(client => client.Role)
                 .WithOne()
                 .HasForeignKey<Client>(uidRno =>  new { uidRno.Uid, uidRno.Rno })
-                .HasPrincipalKey<Role>(uidRno =>  new { uidRno.Uid, uidRno.Rno }).OnDelete(DeleteBehavior.ClientSetNull);
+                .HasPrincipalKey<Role>(uidRno =>  new { uidRno.Uid, uidRno.Rno });
 
             entité.HasIndex(donnée => donnée.Nom);
-            entité.HasIndex(donnée => donnée.FournisseurId);
 
             entité.ToTable("Clients");
         }

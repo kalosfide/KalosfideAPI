@@ -26,11 +26,8 @@ namespace KalosfideAPI.Data
         // navigation
         virtual public Role Role { get; set; }
 
-        [InverseProperty("Fournisseur")]
-        virtual public ICollection<Client> Clients { get; set; }
-
         [InverseProperty("Producteur")]
-        virtual public ICollection<Produit> Produits { get; set; }
+        virtual public ICollection<Catégorie> Catégories { get; set; }
 
         [InverseProperty("Livreur")]
         virtual public ICollection<Livraison> Livraisons { get; set; }

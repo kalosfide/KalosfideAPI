@@ -8,6 +8,11 @@ namespace KalosfideAPI.Roles
         public override int Rno { get; set; }
 
         // données
-        public string SiteId { get; set; }
+        public string SiteUid { get; set; }
+        public int SiteRno { get; set; }
+
+        // calculés
+        public string Etat { get; set; }
+        public string NomSite { get; set; }
     }
 }

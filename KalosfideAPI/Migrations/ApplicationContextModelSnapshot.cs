@@ -82,6 +82,27 @@ namespace KalosfideAPI.Migrations
                     b.ToTable("ApplicationUser");
                 });
 
+            modelBuilder.Entity("KalosfideAPI.Data.Catégorie", b =>
+                {
+                    b.Property<string>("Uid")
+                        .HasMaxLength(20);
+
+                    b.Property<int>("Rno");
+
+                    b.Property<long>("No");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(200);
+
+                    b.HasKey("Uid", "Rno", "No");
+
+                    b.HasIndex("Nom")
+                        .IsUnique();
+
+                    b.ToTable("Catégories");
+                });
+
             modelBuilder.Entity("KalosfideAPI.Data.Client", b =>
                 {
                     b.Property<string>("Uid")
@@ -92,25 +113,13 @@ namespace KalosfideAPI.Migrations
                     b.Property<string>("Adresse")
                         .HasMaxLength(500);
 
-                    b.Property<string>("FournisseurId")
-                        .IsRequired()
-                        .HasMaxLength(31);
-
-                    b.Property<int?>("FournisseurRno");
-
-                    b.Property<string>("FournisseurUid");
-
                     b.Property<string>("Nom")
                         .IsRequired()
                         .HasMaxLength(200);
 
                     b.HasKey("Uid", "Rno");
 
-                    b.HasIndex("FournisseurId");
-
                     b.HasIndex("Nom");
-
-                    b.HasIndex("FournisseurUid", "FournisseurRno");
 
                     b.ToTable("Clients");
                 });
@@ -124,54 +133,75 @@ namespace KalosfideAPI.Migrations
 
                     b.Property<long>("No");
 
-                    b.Property<DateTime>("Date");
+                    b.Property<DateTime?>("Date");
 
-                    b.Property<long>("LivraisonNo");
-
-                    b.Property<long?>("LivraisonNo1");
+                    b.Property<long?>("LivraisonNo");
 
                     b.Property<int?>("LivraisonRno");
 
-                    b.Property<string>("LivraisonRoleId")
-                        .HasMaxLength(31);
-
-                    b.Property<string>("LivraisonUid");
+                    b.Property<string>("LivraisonUid")
+                        .HasMaxLength(20);
 
                     b.HasKey("Uid", "Rno", "No");
 
-                    b.HasIndex("Date");
-
-                    b.HasIndex("LivraisonUid", "LivraisonRno", "LivraisonNo1");
+                    b.HasIndex("LivraisonUid", "LivraisonRno", "LivraisonNo");
 
                     b.ToTable("Commandes");
                 });
 
             modelBuilder.Entity("KalosfideAPI.Data.DétailCommande", b =>
                 {
-                    b.Property<string>("CommandeUid")
+                    b.Property<string>("Uid")
                         .HasMaxLength(20);
 
-                    b.Property<int>("CommandeRno");
+                    b.Property<int>("Rno");
 
-                    b.Property<long>("CommandeNo");
+                    b.Property<long>("No");
 
-                    b.Property<string>("ProduitUId")
+                    b.Property<string>("Uid2")
                         .HasMaxLength(20);
 
-                    b.Property<int>("ProduitRno");
+                    b.Property<int>("Rno2");
 
-                    b.Property<long>("ProduitNo");
+                    b.Property<long>("No2");
 
-                    b.Property<int>("Quantité");
-
-                    b.Property<decimal>("UnitésLivrées")
+                    b.Property<decimal>("Demande")
                         .HasColumnType("decimal(5,3)");
 
-                    b.HasKey("CommandeUid", "CommandeRno", "CommandeNo", "ProduitUId", "ProduitRno", "ProduitNo");
+                    b.Property<decimal?>("Mesure")
+                        .HasColumnType("decimal(5,3)");
 
-                    b.HasIndex("ProduitUId", "ProduitRno", "ProduitNo");
+                    b.Property<decimal?>("Prix")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("TypeCommande")
+                        .IsRequired()
+                        .HasMaxLength(1);
+
+                    b.HasKey("Uid", "Rno", "No", "Uid2", "Rno2", "No2");
+
+                    b.HasIndex("Uid2", "Rno2", "No2");
 
                     b.ToTable("DétailCommandes");
+                });
+
+            modelBuilder.Entity("KalosfideAPI.Data.EtatPrix", b =>
+                {
+                    b.Property<string>("Uid")
+                        .HasMaxLength(20);
+
+                    b.Property<int>("Rno");
+
+                    b.Property<long>("No");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<decimal>("Prix")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Uid", "Rno", "No", "Date");
+
+                    b.ToTable("EtatPrix");
                 });
 
             modelBuilder.Entity("KalosfideAPI.Data.EtatRole", b =>
@@ -245,25 +275,6 @@ namespace KalosfideAPI.Migrations
                     b.ToTable("Livraisons");
                 });
 
-            modelBuilder.Entity("KalosfideAPI.Data.Prix", b =>
-                {
-                    b.Property<string>("Uid")
-                        .HasMaxLength(20);
-
-                    b.Property<int>("Rno");
-
-                    b.Property<long>("No");
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<decimal>("PrixUnitaire")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.HasKey("Uid", "Rno", "No");
-
-                    b.ToTable("PrixDesProduits");
-                });
-
             modelBuilder.Entity("KalosfideAPI.Data.Produit", b =>
                 {
                     b.Property<string>("Uid")
@@ -273,22 +284,30 @@ namespace KalosfideAPI.Migrations
 
                     b.Property<long>("No");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500);
+                    b.Property<long>("CatégorieNo");
 
                     b.Property<string>("Nom")
                         .IsRequired()
                         .HasMaxLength(200);
 
-                    b.Property<bool>("QuantitéVautUnités");
+                    b.Property<string>("TypeCommande")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(1)
+                        .HasDefaultValue("1");
 
-                    b.Property<decimal>("Unité")
-                        .HasColumnType("decimal(5,2)");
+                    b.Property<string>("TypeMesure")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(1)
+                        .HasDefaultValue("U");
 
                     b.HasKey("Uid", "Rno", "No");
 
                     b.HasIndex("Nom")
                         .IsUnique();
+
+                    b.HasIndex("Uid", "Rno", "CatégorieNo");
 
                     b.ToTable("Produits");
                 });
@@ -323,6 +342,8 @@ namespace KalosfideAPI.Migrations
 
                     b.Property<string>("NomSite")
                         .HasMaxLength(200);
+
+                    b.Property<bool>("Ouvert");
 
                     b.Property<string>("Titre")
                         .HasMaxLength(200);
@@ -467,15 +488,20 @@ namespace KalosfideAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("KalosfideAPI.Data.Catégorie", b =>
+                {
+                    b.HasOne("KalosfideAPI.Data.Fournisseur", "Producteur")
+                        .WithMany("Catégories")
+                        .HasForeignKey("Uid", "Rno")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("KalosfideAPI.Data.Client", b =>
                 {
-                    b.HasOne("KalosfideAPI.Data.Fournisseur", "Fournisseur")
-                        .WithMany("Clients")
-                        .HasForeignKey("FournisseurUid", "FournisseurRno");
-
                     b.HasOne("KalosfideAPI.Data.Role", "Role")
                         .WithOne()
-                        .HasForeignKey("KalosfideAPI.Data.Client", "Uid", "Rno");
+                        .HasForeignKey("KalosfideAPI.Data.Client", "Uid", "Rno")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("KalosfideAPI.Data.Commande", b =>
@@ -487,19 +513,27 @@ namespace KalosfideAPI.Migrations
 
                     b.HasOne("KalosfideAPI.Data.Livraison", "Livraison")
                         .WithMany("Commandes")
-                        .HasForeignKey("LivraisonUid", "LivraisonRno", "LivraisonNo1");
+                        .HasForeignKey("LivraisonUid", "LivraisonRno", "LivraisonNo");
                 });
 
             modelBuilder.Entity("KalosfideAPI.Data.DétailCommande", b =>
                 {
                     b.HasOne("KalosfideAPI.Data.Commande", "Commande")
                         .WithMany("DétailCommandes")
-                        .HasForeignKey("CommandeUid", "CommandeRno", "CommandeNo")
+                        .HasForeignKey("Uid", "Rno", "No")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("KalosfideAPI.Data.Produit", "Produit")
                         .WithMany()
-                        .HasForeignKey("ProduitUId", "ProduitRno", "ProduitNo");
+                        .HasForeignKey("Uid2", "Rno2", "No2");
+                });
+
+            modelBuilder.Entity("KalosfideAPI.Data.EtatPrix", b =>
+                {
+                    b.HasOne("KalosfideAPI.Data.Produit", "Produit")
+                        .WithMany("EtatPrix")
+                        .HasForeignKey("Uid", "Rno", "No")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("KalosfideAPI.Data.EtatRole", b =>
@@ -534,19 +568,11 @@ namespace KalosfideAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("KalosfideAPI.Data.Prix", b =>
-                {
-                    b.HasOne("KalosfideAPI.Data.Produit", "Produit")
-                        .WithMany("Prix")
-                        .HasForeignKey("Uid", "Rno", "No")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("KalosfideAPI.Data.Produit", b =>
                 {
-                    b.HasOne("KalosfideAPI.Data.Fournisseur", "Producteur")
+                    b.HasOne("KalosfideAPI.Data.Catégorie", "Catégorie")
                         .WithMany("Produits")
-                        .HasForeignKey("Uid", "Rno")
+                        .HasForeignKey("Uid", "Rno", "CatégorieNo")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

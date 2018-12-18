@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KalosfideAPI.Administrateurs;
 using KalosfideAPI.Clients;
 using KalosfideAPI.Data;
 using KalosfideAPI.Data.Constantes;
 using KalosfideAPI.Data.Keys;
-using KalosfideAPI.Erreurs;
 using KalosfideAPI.Fournisseurs;
 using KalosfideAPI.Partages;
 using KalosfideAPI.Roles;
@@ -16,9 +13,7 @@ using KalosfideAPI.Sites;
 using KalosfideAPI.Utilisateurs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace KalosfideAPI.Enregistrement
 {
@@ -46,13 +41,12 @@ namespace KalosfideAPI.Enregistrement
         public EnregistrementController(
             IJwtFabrique jwtFabrique,
             IUtilisateurService service, 
-            IUtilisateurTransformation transformation,
             IRoleService roleService,
             IAdministrateurService administrateurService,
             IFournisseurService fournisseurService,
             ISiteService siteService,
             IClientService clientService
-            ) : base(jwtFabrique, service, transformation)
+            ) : base(jwtFabrique, service)
         {
             _roleService = roleService;
             _administrateurService = administrateurService;
@@ -121,7 +115,7 @@ namespace KalosfideAPI.Enregistrement
                 case TypeDeRole.Fournisseur.Code:
                     return await _service.PeutAjouterRole(utilisateur, (vue as FournisseurVue).CréeFournisseur());
                 case TypeDeRole.Client.Code:
-                    return await _service.PeutAjouterRole(utilisateur, (vue as ClientVue).CréeClient());
+                    return await _service.PeutAjouterRole(utilisateur, vue as ClientVue);
                 default:
                     break;
             }
@@ -155,6 +149,22 @@ namespace KalosfideAPI.Enregistrement
             }
             résultat.Entité.Uid = uid;
             résultat.Entité.Rno = rno;
+        }
+
+        private Task ValideEntité(RésultatEnregistrement résultat, string type)
+        {
+            switch (type)
+            {
+                case TypeDeRole.Administrateur.Code:
+                    break;
+                case TypeDeRole.Fournisseur.Code:
+                    return _siteService.ValideAjoute((résultat.Site), ModelState);
+                case TypeDeRole.Client.Code:
+                    break;
+                default:
+                    break;
+            }
+            return Task.CompletedTask;
         }
 
         private void AjouteEntitéSansSauver(RésultatEnregistrement résultat, string type)
@@ -200,6 +210,16 @@ namespace KalosfideAPI.Enregistrement
 
                 CréeEntité(résultat, type, vue);
 
+                await ValideEntité(résultat, type);
+                if (!ModelState.IsValid)
+                {
+                    if (résultat.ACréé)
+                    {
+                        await _service.Supprime(résultat.Utilisateur);
+                    }
+                    return BadRequest(ModelState);
+                }
+
                 _roleService.AjouteSansSauver(role);
                 AjouteEntitéSansSauver(résultat, type);
 
@@ -218,7 +238,6 @@ namespace KalosfideAPI.Enregistrement
                 }
                 throw (ex);
             }
-
 
             return await Connecte(résultat.user, true);
         }
@@ -248,6 +267,24 @@ namespace KalosfideAPI.Enregistrement
         public async Task<IActionResult> Client(ClientVue vue)
         {
             return await Enregistre(TypeDeRole.Client.Code, vue);
+        }
+
+        [HttpGet("/api/enregistrement/userNamePris/{nom}")]
+        [ProducesResponseType(200)] // Ok
+        [ProducesResponseType(404)] // Not found
+        [AllowAnonymous]
+        public async Task<IActionResult> UserNamePris(string userName)
+        {
+            return Ok(await _service.UserNamePris(userName));
+        }
+
+        [HttpGet("/api/enregistrement/emailPris/{nom}")]
+        [ProducesResponseType(200)] // Ok
+        [ProducesResponseType(404)] // Not found
+        [AllowAnonymous]
+        public async Task<IActionResult> EmailPris(string userName)
+        {
+            return Ok(await _service.EmailPris(userName));
         }
 
     }

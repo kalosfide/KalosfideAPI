@@ -24,6 +24,7 @@ namespace KalosfideAPI.Data
         public string NomSite { get; set; }
         [MaxLength(200)]
         public string Titre { get; set; }
+        public bool Ouvert { get; set; }
 
         // navigation
         [JsonIgnore]
@@ -35,8 +36,6 @@ namespace KalosfideAPI.Data
             var entité = builder.Entity<Site>();
 
             entité.HasKey(donnée => new { donnée.Uid, donnée.Rno });
-
-            entité.HasMany(s => s.Usagers).WithOne(r => r.Site).HasForeignKey(r => new { r.SiteUid, r.SiteRno }).HasPrincipalKey(s => new { s.Uid, s.Rno });
 
             entité.ToTable("Sites");
         }

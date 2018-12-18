@@ -14,7 +14,6 @@ namespace KalosfideAPI.Fournisseurs
         public static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IFournisseurService, FournisseurService>();
-//            services.AddScoped<IRoleTransformation, RoleTransformation>();
         }
     }
 }

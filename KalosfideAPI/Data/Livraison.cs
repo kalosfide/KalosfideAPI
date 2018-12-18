@@ -39,6 +39,11 @@ namespace KalosfideAPI.Data
                 .WithMany(livreur => livreur.Livraisons)
                 .HasForeignKey(livraison => new { livraison.Uid, livraison.Rno });
 
+            entité
+                .HasMany(l => l.Commandes)
+                .WithOne(c => c.Livraison)
+                .HasForeignKey(c => new { c.LivraisonUid, c.LivraisonRno, c.LivraisonNo });
+
             entité.ToTable("Livraisons");
         }
     }

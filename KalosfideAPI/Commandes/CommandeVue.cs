@@ -1,26 +1,40 @@
 ﻿using KalosfideAPI.Data;
+using KalosfideAPI.Data.Keys;
 using KalosfideAPI.DétailCommandes;
 using KalosfideAPI.Livraisons;
+using KalosfideAPI.Produits;
 using System;
 using System.Collections.Generic;
 
 namespace KalosfideAPI.Commandes
 {
-    public class CommandeVue
+    public class CommandeVue : AKeyUidRnoNo
     {
-        public int No { get; set; }
+        // identité
+        public override string Uid { get; set; }
+        public override int Rno { get; set; }
+        public override long No { get; set; }
 
-        public string ClientUtilisateurId { get; set; }
-        public int ClientRoleNo { get; set; }
-        public Role Client { get; set; }
+        // données
+        public DateTime? Date { get; set; }
 
-        public string FournisseurUtilisateurId { get; set; }
-        public int FournisseurRoleNo { get; set; }
-        public long LivraisonID { get; set; }
-        public LivraisonVue Livraison { get; set; }
+        public string LivraisonUid { get; set; }
+        public int? LivraisonRno { get; set; }
+        public long? LivraisonNo { get; set; }
 
-        public DateTime Date { get; set; }
+        // calculés
+        public string NomClient { get; set; }
+        public List<CommandeVueDétail> Lignes { get; set; }
+        public decimal? Prix { get; set; }
+    }
 
-        public ICollection<DétailCommandeVue> Détails { get; set; }
+    public class CommandeVueDétail : AKeyUidRnoNo
+    {
+        public override string Uid { get; set; }
+        public override int Rno { get; set; }
+        public override long No { get; set; }
+
+        public string TypeCommande { get; set; }
+        public decimal Demande { get; set; }
     }
 }

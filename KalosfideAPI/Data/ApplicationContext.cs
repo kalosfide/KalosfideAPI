@@ -30,10 +30,11 @@ namespace KalosfideAPI.Data
             Data.Client.CréeTable(builder);
 
             // Tables de données
+            Data.Catégorie.CréeTable(builder);
+            Data.Produit.CréeTable(builder);
+            Data.EtatPrix.CréeTable(builder);
             Data.Commande.CréeTable(builder);
             Data.Livraison.CréeTable(builder);
-            Data.Produit.CréeTable(builder);
-            Data.Prix.CréeTable(builder);
             Data.DétailCommande.CréeTable(builder);
         }
 
@@ -49,11 +50,12 @@ namespace KalosfideAPI.Data
         public DbSet<Fournisseur> Fournisseur { get; set; }
         public DbSet<Client> Client { get; set; }
 
+        public DbSet<Catégorie> Catégorie { get; set; }
+        public DbSet<Produit> Produit { get; set; }
+        public DbSet<EtatPrix> EtatPrix{ get; set; }
         public DbSet<Commande> Commande { get; set; }
         public DbSet<DétailCommande> DétailCommande { get; set; }
         public DbSet<Livraison> Livraison { get; set; }
-        public DbSet<Produit> Produit { get; set; }
-        public DbSet<Prix> Prix{ get; set; }
 
     }
 }

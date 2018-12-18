@@ -23,38 +23,21 @@ namespace KalosfideAPI.Data
         [Required]
         [MinLength(10), MaxLength(200)]
         public string Nom { get; set; }
-        [MaxLength(500)]
-        public string Description { get; set; }
         [Required]
-        [Column(TypeName = "decimal(5,2)")]
-        public decimal Unité { get; set; }
-        [DefaultValue(true)]
-        public bool QuantitéVautUnités { get; set; }
+        public long CatégorieNo { get; set; }
+
+        [Required]
+        [StringLength(1)]
+        public string TypeMesure { get; set; }
+        [Required]
+        [StringLength(1)]
+        public string TypeCommande { get; set; }
 
         // navigation
-        virtual public Fournisseur Producteur { get; set; }
-        virtual public ICollection<Prix> Prix { get; set; }
+        virtual public Catégorie Catégorie { get; set; }
+        virtual public ICollection<EtatPrix> EtatPrix { get; set; }
 
         // utiles
-        public Prix PrixEnCours
-        {
-            get
-            {
-                Prix[] prix = new Prix[0];
-                if (Prix != null)
-                {
-                    Prix.CopyTo(prix, 0);
-                }
-                return prix.Length > 0 ? prix[prix.Length - 1] : null;
-            }
-        }
-        public bool Indisponible
-        {
-            get
-            {
-                return PrixEnCours == null || PrixEnCours.Indisponible;
-            }
-        }
 
         // création
         public static void CréeTable(ModelBuilder builder)
@@ -65,10 +48,14 @@ namespace KalosfideAPI.Data
 
             entité.HasIndex(donnée => donnée.Nom).IsUnique();
 
+            entité.Property(donnée => donnée.TypeMesure).HasDefaultValue(TypeUnitéDeMesure.Aucune);
+            entité.Property(donnée => donnée.TypeCommande).HasDefaultValue(TypeUnitéDeCommande.Unité);
+
             entité
-                .HasOne(produit => produit.Producteur)
-                .WithMany(producteur => producteur.Produits)
-                .HasForeignKey(produit => new { produit.Uid, produit.Rno });
+                .HasOne(produit => produit.Catégorie)
+                .WithMany(catégorie => catégorie.Produits)
+                .HasForeignKey(produit => new { produit.Uid, produit.Rno, produit.CatégorieNo })
+                .HasPrincipalKey(catégorie => new { catégorie.Uid, catégorie.Rno, catégorie.No });
 
             entité.ToTable("Produits");
         }

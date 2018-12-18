@@ -14,7 +14,6 @@ namespace KalosfideAPI.Administrateurs
         public static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IAdministrateurService, AdministrateurService>();
- //           services.AddScoped<IRoleTransformation, RoleTransformation>();
         }
     }
 }

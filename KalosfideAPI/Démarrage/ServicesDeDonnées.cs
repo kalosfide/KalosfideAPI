@@ -19,7 +19,13 @@ namespace KalosfideAPI.Démarrage
 
             Clients.Initialisation.ConfigureServices(services);
 
+            Catégories.Initialisation.ConfigureServices(services);
+
             Produits.Initialisation.ConfigureServices(services);
+
+            FixePrix.Initialisation.ConfigureServices(services);
+
+            Commandes.Initialisation.ConfigureServices(services);
         }
     }
 }

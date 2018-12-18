@@ -14,7 +14,6 @@ namespace KalosfideAPI.Sites
         public static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<ISiteService, SiteService>();
-            services.AddScoped<ISiteTransformation, SiteTransformation>();
         }
     }
 }
