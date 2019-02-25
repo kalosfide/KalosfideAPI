@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using KalosfideAPI.Data.Keys;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
+﻿using KalosfideAPI.Data.Keys;
 
 namespace KalosfideAPI.Fournisseurs
 {

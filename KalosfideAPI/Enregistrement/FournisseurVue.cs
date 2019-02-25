@@ -6,31 +6,13 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Enregistrement
 {
-    public class FournisseurVue: VueBase
+    public class EnregistrementFournisseurVue: VueBase
     {
         public string Nom { get; set; }
         public string Adresse { get; set; }
 
         public string NomSite { get; set; }
         public string Titre { get; set; }
-
-        public Fournisseur CréeFournisseur()
-        {
-            return new Fournisseur
-            {
-                Nom = Nom,
-                Adresse = Adresse,
-            };
-        }
-
-        public Site CréeSite()
-        {
-            return new Site
-            {
-                NomSite = NomSite,
-                Titre = Titre,
-            };
-        }
 
     }
 }

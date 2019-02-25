@@ -7,10 +7,11 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KalosfideAPI.Erreurs;
-using System.Linq.Expressions;
 using KalosfideAPI.Sécurité;
 using KalosfideAPI.Data.Constantes;
 using KalosfideAPI.Enregistrement;
+using KalosfideAPI.Sites;
+using System.Security.Claims;
 
 namespace KalosfideAPI.Utilisateurs
 {
@@ -19,16 +20,19 @@ namespace KalosfideAPI.Utilisateurs
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ISiteService _siteService;
 
         public UtilisateurService(
             ApplicationContext context,
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager
+            SignInManager<ApplicationUser> signInManager,
+            ISiteService siteService
             ) : base(context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             DValidation = _Validation;
+            _siteService = siteService;
         }
 
         #region Validation
@@ -102,9 +106,7 @@ namespace KalosfideAPI.Utilisateurs
 
         public async Task<CarteUtilisateur> CréeCarteUtilisateur(ApplicationUser user)
         {
-            var utilisateur = await _context.Utilisateur.Where(u => u.UserId == user.Id)
-                .Include(u => u.Roles)
-                .ThenInclude(r => r.Site)
+            Utilisateur utilisateur = await _context.Utilisateur.Where(u => u.UserId == user.Id)
                 .FirstOrDefaultAsync();
 
             CarteUtilisateur carte = new CarteUtilisateur
@@ -112,25 +114,58 @@ namespace KalosfideAPI.Utilisateurs
                 UserId = user.Id,
                 UserName = user.UserName,
                 Uid = utilisateur.Uid,
-                Etat = utilisateur.Etat,
-                Roles = new List<CarteRole>()
             };
 
-           await _context.Role.Where(role => role.Uid == utilisateur.Uid).ForEachAsync(async role =>
-            {
-                carte.Roles.Add(new CarteRole
-                {
-                    Rno = role.Rno,
-                    Etat = role.Etat,
-                    NomSite = (await _context.Site.Where(site => site.Uid == role.SiteUid && site.Rno == role.SiteRno).FirstOrDefaultAsync()).NomSite
-                });
-            });
+            await ComplèteCarteUtilisateur(carte, utilisateur);
             return carte;
+        }
+
+        public async Task<CarteUtilisateur> CréeCarteUtilisateur(ClaimsPrincipal user)
+        {
+            CarteUtilisateur carte = new CarteUtilisateur();
+            IEnumerable<Claim> claims = user.Identities.FirstOrDefault()?.Claims;
+            if (claims != null && claims.Count() > 0)
+            {
+                carte.UserId = (claims.Where(c => c.Type == JwtClaims.UserId).First())?.Value;
+                carte.UserName = (claims.Where(c => c.Type == JwtClaims.UserName).First())?.Value;
+                carte.Uid = (claims.Where(c => c.Type == JwtClaims.UtilisateurId).First())?.Value;
+            }
+
+            Utilisateur utilisateur = await _context.Utilisateur.Where(u => u.UserId == carte.UserId).FirstOrDefaultAsync();
+            if (utilisateur != null)
+            {
+                ApplicationUser applicationUser = utilisateur.ApplicationUser;
+                if (carte.UserName != applicationUser.UserName || carte.Uid != utilisateur.Uid)
+                {
+                    // fausse carte
+                    return null;
+                }
+
+                await ComplèteCarteUtilisateur(carte, utilisateur);
+
+            }
+            return carte;
+        }
+
+        private async Task ComplèteCarteUtilisateur(CarteUtilisateur carte, Utilisateur utilisateur)
+        {
+            carte.Etat = utilisateur.Etat;
+            carte.Roles = utilisateur.Roles.Select(r => new CarteRole
+            {
+                Rno = r.Rno,
+                Etat = r.Etat,
+                NomSite = r.Site.NomSite
+            }).ToList();
+            var sites = utilisateur.Roles
+                .Where(r => r.SiteUid == utilisateur.Uid)
+                .Select(r => r.Site)
+                .ToList();
+            carte.Sites = await _siteService.CréeVuesAsync(sites);
         }
 
         // un utilisateur ne peut pas devenir client d'un site où il est déjà client avec le même nom
         // inutile si nom client unique sur le site
-        public async Task<bool> PeutAjouterRole(Utilisateur utilisateur, ClientVue client)
+        public async Task<bool> PeutAjouterRole(Utilisateur utilisateur, EnregistrementClientVue client)
         {
             var existe = await _context.Role.Where(role => role.Uid == utilisateur.Uid)
                 .Join(_context.Client, role => new { role.Uid, role.Rno }, client1 => new { client1.Uid, client1.Rno }, (role, client1) => new { role, client1 })
@@ -139,7 +174,7 @@ namespace KalosfideAPI.Utilisateurs
         }
 
         // un utilisateur ne peut pas devenir  d'un site où il est déjà client avec le même nom 
-        public async Task<bool> PeutAjouterRole(Utilisateur utilisateur, Fournisseur fournisseur)
+        public async Task<bool> PeutAjouterRole(Utilisateur utilisateur, EnregistrementFournisseurVue fournisseur)
         {
             var existe = await _context.Role.Where(role => role.Uid == utilisateur.Uid)
                 .Join(_context.Client, role => new { role.Uid, role.Rno }, fournisseur1 => new { fournisseur1.Uid, fournisseur1.Rno }, (role, fournisseur1) => fournisseur1)
@@ -170,6 +205,7 @@ namespace KalosfideAPI.Utilisateurs
                 {
                     UserId = applicationUser.Id,
                     Uid = Max.ToString(),
+                    Etat = TypeEtatUtilisateur.Nouveau,
                 };
                 _context.Utilisateur.Add(utilisateur);
                 EtatUtilisateur changement = new EtatUtilisateur
@@ -225,6 +261,8 @@ namespace KalosfideAPI.Utilisateurs
 
         public async Task<RetourDeService<Utilisateur>> ChangeEtat(Utilisateur utilisateur, string état)
         {
+            utilisateur.Etat = état;
+            _context.Utilisateur.Update(utilisateur);
             EtatUtilisateur changement = new EtatUtilisateur
             {
                 Uid = utilisateur.Uid,

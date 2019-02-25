@@ -1,14 +1,10 @@
 ﻿using KalosfideAPI.Data;
 using KalosfideAPI.Data.Keys;
-using KalosfideAPI.Erreurs;
 using KalosfideAPI.Partages.KeyParams;
-using KalosfideAPI.Roles;
 using KalosfideAPI.Sécurité;
+using KalosfideAPI.Utilisateurs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Fournisseurs
@@ -19,7 +15,7 @@ namespace KalosfideAPI.Fournisseurs
     [Authorize]
     public class FournisseurController: KeyUidRnoController<Fournisseur, FournisseurVue>
     {
-        public FournisseurController(IFournisseurService service) : base(service)
+        public FournisseurController(IFournisseurService service, IUtilisateurService utilisateurService) : base(service, utilisateurService)
         {
         }
 

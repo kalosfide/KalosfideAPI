@@ -3,18 +3,48 @@ using KalosfideAPI.Data.Constantes;
 using KalosfideAPI.Partages;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Roles
 {
-    public class RoleService : Partages.KeyParams.KeyUidRnoService<Role, RoleVue>, IRoleService
+    class GèreEtat : Partages.KeyParams.GéreEtat<Role, RoleVue, EtatRole>
+    {
+        public GèreEtat(DbSet<EtatRole> dbSetEtat) : base(dbSetEtat)
+        { }
+        protected override EtatRole CréeEtatAjout(Role donnée)
+        {
+            EtatRole etat = new EtatRole
+            {
+                Etat = TypeEtatRole.Nouveau,
+                Date = DateTime.Now
+            };
+            return etat;
+        }
+        protected override EtatRole CréeEtatEdite(Role donnée, RoleVue vue)
+        {
+            bool modifié = false;
+            EtatRole état = new EtatRole
+            {
+                Date = DateTime.Now
+            };
+            if (vue.Etat != null && donnée.Etat != vue.Etat)
+            {
+                donnée.Etat = vue.Etat;
+                état.Etat = vue.Etat;
+                modifié = true;
+            }
+            return modifié ? état : null;
+        }
+    }
+
+    public class RoleService : Partages.KeyParams.KeyUidRnoService<Role, RoleVue, EtatRole>, IRoleService
     {
 
         public RoleService(ApplicationContext context) : base(context)
         {
             _dbSet = _context.Role;
+            _géreEtat = new GèreEtat(_context.EtatRole);
             _inclutRelations = Complète;
         }
 
@@ -23,33 +53,35 @@ namespace KalosfideAPI.Roles
             return données.Include(d => d.Site);
         }
 
-        public new void AjouteSansSauver(Role role)
+        public async Task<RetourDeService<Role>> ChangeEtat(Role role, string état)
         {
-            base.AjouteSansSauver(role);
-            _ChangeEtat(role, TypeEtatRole.Nouveau);
-        }
-
-        public void _ChangeEtat(Role role, string état)
-        {
-            EtatRole etatDeRole = new EtatRole
+            role.Etat = état;
+            _context.Role.Update(role);
+            EtatRole etatRole = new EtatRole
             {
-                Uid = role.Uid,
-                Rno = role.Rno,
                 Date = DateTime.Now,
                 Etat = état
             };
-            _context.EtatRole.Add(etatDeRole);
-        }
-
-        public async Task<RetourDeService<Role>> ChangeEtat(Role role, string état)
-        {
-            _ChangeEtat(role, état);
+            etatRole.CopieKey(role.KeyParam);
+            _context.EtatRole.Add(etatRole);
             return await SaveChangesAsync(role);
         }
 
         public override Role NouvelleDonnée()
         {
             return new Role();
+        }
+
+        public async Task<Role> CréeRole(Utilisateur utilisateur)
+        {
+            int roleNo = await DernierNo(utilisateur.Uid) + 1;
+            Role role = new Role
+            {
+                Uid = utilisateur.Uid,
+                Rno = roleNo,
+                Etat = TypeEtatRole.Nouveau
+            };
+            return role;
         }
 
         public override RoleVue CréeVue(Role donnée)
@@ -60,7 +92,7 @@ namespace KalosfideAPI.Roles
                 SiteRno = donnée.SiteRno,
                 NomSite = donnée.Site.NomSite,
             };
-            FixeVueKey(donnée, vue);
+            vue.CopieKey(donnée.KeyParam);
             return vue;
         }
 

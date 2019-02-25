@@ -2,9 +2,8 @@
 using KalosfideAPI.Enregistrement;
 using KalosfideAPI.Partages;
 using KalosfideAPI.Sécurité;
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Utilisateurs
@@ -19,6 +18,7 @@ namespace KalosfideAPI.Utilisateurs
         Task Déconnecte();
 
         Task<CarteUtilisateur> CréeCarteUtilisateur(ApplicationUser applicationUser);
+        Task<CarteUtilisateur> CréeCarteUtilisateur(ClaimsPrincipal user);
 
         Task<bool> NomUnique(string nom);
 
@@ -29,8 +29,8 @@ namespace KalosfideAPI.Utilisateurs
         Task<List<Utilisateur>> Lit();
 
         Task<Utilisateur> UtilisateurDeUser(string userId);
-        Task<bool> PeutAjouterRole(Utilisateur utilisateur, ClientVue client);
-        Task<bool> PeutAjouterRole(Utilisateur utilisateur, Fournisseur fournisseur);
+        Task<bool> PeutAjouterRole(Utilisateur utilisateur, EnregistrementClientVue client);
+        Task<bool> PeutAjouterRole(Utilisateur utilisateur, EnregistrementFournisseurVue fournisseur);
 
         Task<RetourDeService<Utilisateur>> Supprime(Utilisateur utilisateur);
 

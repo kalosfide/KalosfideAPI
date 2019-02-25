@@ -36,7 +36,15 @@ namespace KalosfideAPI.Data.Keys
             return Uid == param.Uid && Rno == param.Rno && No == param.No;
         }
 
+        public override void CopieKey(KeyParam param)
+        {
+            Uid = param.Uid;
+            Rno = param.Rno ?? 0;
+            No = param.No ?? 0;
+        }
+
         public override KeyParam KeyParam => new KeyParam { Uid = Uid, Rno = Rno, No = No };
         public override KeyParam KeyParamParent => new KeyParam { Uid = Uid, Rno = Rno };
+        public new KeyParam KeyParamSite => new KeyParam { Uid = Uid, Rno = Rno };
     }
 }

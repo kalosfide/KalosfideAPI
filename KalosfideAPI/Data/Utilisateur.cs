@@ -17,6 +17,9 @@ namespace KalosfideAPI.Data
         [Required]
         public string UserId { get; set; }
 
+        [StringLength(1)]
+        public string Etat { get; set; }
+
         // navigation
         virtual public ApplicationUser ApplicationUser { get; set; }
 
@@ -24,16 +27,6 @@ namespace KalosfideAPI.Data
         virtual public ICollection<EtatUtilisateur> Etats { get; set; }
 
         // utiles
-        public string Etat
-        {
-            get
-            {
-                int nb = Etats.Count;
-                EtatUtilisateur[] etats = new EtatUtilisateur[nb];
-                Etats.CopyTo(etats, 0);
-                return etats[nb - 1].Etat;
-            }
-        }
 
         // création
         public static void CréeTable(ModelBuilder builder)
@@ -41,6 +34,8 @@ namespace KalosfideAPI.Data
             var entité = builder.Entity<Utilisateur>();
 
             entité.HasKey(utilisateur => utilisateur.Uid);
+
+            entité.Property(donnée => donnée.Etat).HasDefaultValue(TypeEtatUtilisateur.Nouveau);
 
             entité.ToTable("Utilisateurs");
         }

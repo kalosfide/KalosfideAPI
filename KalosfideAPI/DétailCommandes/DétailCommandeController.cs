@@ -2,12 +2,12 @@
 using KalosfideAPI.Data.Keys;
 using KalosfideAPI.Partages.KeyParams;
 using KalosfideAPI.Sécurité;
+using KalosfideAPI.Utilisateurs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+
+// INUTILISE
 
 namespace KalosfideAPI.DétailCommandes
 {
@@ -16,21 +16,28 @@ namespace KalosfideAPI.DétailCommandes
     [Authorize]
     public class DétailCommandeController : KeyParamController<DétailCommande, DétailCommandeVue, KeyParam>
     {
-        public DétailCommandeController(IDétailCommandeService service) : base(service)
+        public DétailCommandeController(IDétailCommandeService service, IUtilisateurService utilisateurService) : base(service, utilisateurService)
         {
+            dAjouteEstPermis = AjouteEstPermis;
+            dEditeEstPermis = EditeEstPermis;
         }
 
         private IDétailCommandeService _service { get => __service as IDétailCommandeService; }
+
+        private Task<bool> AjouteEstPermis(CarteUtilisateur carte, KeyParam param)
+        {
+            return Task.FromResult(carte.EstPropriétaire(param));
+        }
+
+        private Task<bool> EditeEstPermis(CarteUtilisateur carte, KeyParam param)
+        {
+            return Task.FromResult(carte.EstPropriétaire(param));
+        }
 
         protected override Task FixeKeyParamAjout(DétailCommandeVue vue)
         {
             return Task.CompletedTask;
         }
-        protected override Task<bool> AjouteEstPermis(CarteUtilisateur carte, KeyParam param)
-        {
-            return Task.FromResult(carte.EstPropriétaire(param));
-        }
-
         [HttpPost("/api/detailcommande/ajoute")]
         [ProducesResponseType(201)] // created
         [ProducesResponseType(400)] // Bad request
@@ -61,11 +68,6 @@ namespace KalosfideAPI.DétailCommandes
         public new async Task<IActionResult> Liste([FromQuery] KeyParam param)
         {
             return await base.Liste(param);
-        }
-
-        protected override Task<bool> EditeEstPermis(CarteUtilisateur carte, KeyParam param)
-        {
-            return Task.FromResult(carte.EstPropriétaire(param));
         }
         [HttpPut("/api/detailcommande/edite")]
         [ProducesResponseType(200)] // Ok

@@ -1,10 +1,11 @@
 ﻿using KalosfideAPI.Data;
+using KalosfideAPI.Data.Keys;
 using KalosfideAPI.Partages.KeyParams;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Administrateurs
 {
-    public class AdministrateurService : KeyUidRnoService<Administrateur, AdministrateurVue>, IAdministrateurService
+    public class AdministrateurService : KeyUidRnoService<Administrateur, AdministrateurVue, KeyUidRno>, IAdministrateurService
     {
         public AdministrateurService(ApplicationContext context) : base(context)
         {
@@ -23,7 +24,7 @@ namespace KalosfideAPI.Administrateurs
         public override AdministrateurVue CréeVue(Administrateur donnée)
         {
             AdministrateurVue vue = new AdministrateurVue();
-            FixeVueKey(donnée, vue);
+            vue.CopieKey(donnée.KeyParam);
             return vue;
         }
     }

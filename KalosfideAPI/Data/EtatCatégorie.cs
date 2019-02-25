@@ -1,15 +1,15 @@
 ﻿using KalosfideAPI.Data.Constantes;
+using KalosfideAPI.Data.Keys;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Data
 {
-    public class EtatPrix : Keys.AKeyUidRnoNo
+    public class EtatCatégorie: AKeyUidRnoNo
     {
         // key
         [Required]
@@ -24,25 +24,32 @@ namespace KalosfideAPI.Data
 
         // données
         [Required]
-        [Column(TypeName ="decimal(5,2)")]
-        public decimal Prix { get; set; }
+        [MinLength(10), MaxLength(200)]
+        public string Nom { get; set; }
 
-        // navigation
-        virtual public Produit Produit { get; set; }
-
+        // utiles
+        static Catégorie Catégorie(EtatCatégorie etatCatégorie)
+        {
+            return new Catégorie
+            {
+                Uid = etatCatégorie.Uid,
+                Rno = etatCatégorie.Rno,
+                No = etatCatégorie.No,
+                Nom = etatCatégorie.Nom
+            };
+        }
+        
         // création
         public static void CréeTable(ModelBuilder builder)
         {
-            var entité = builder.Entity<EtatPrix>();
+            var entité = builder.Entity<EtatCatégorie>();
 
             entité.HasKey(donnée => new { donnée.Uid, donnée.Rno, donnée.No, donnée.Date });
 
-            entité
-                .HasOne(etatPrix => etatPrix.Produit)
-                .WithMany(produit => produit.EtatPrix)
-                .HasForeignKey(donnée => new { donnée.Uid, donnée.Rno, donnée.No });
+            entité.HasIndex(donnée => new { donnée.Uid, donnée.Rno, donnée.No });
 
-            entité.ToTable("EtatPrix");
+            entité.ToTable("EtatCatégories");
         }
+
     }
 }

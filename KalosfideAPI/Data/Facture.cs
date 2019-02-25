@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Data
 {
-    public class Livraison: Keys.AKeyUidRnoNo
+    public class Facture : Keys.AKeyUidRnoNo
     {
         // key
         [Required]
@@ -19,33 +19,31 @@ namespace KalosfideAPI.Data
 
         // données
         public DateTime? Date { get; set; }
-        public long? FactureNo { get; set; }
 
         // navigation
-        virtual public ICollection<Commande> Commandes { get; set; }
-        virtual public Fournisseur Livreur { get; set; }
-        virtual public Facture Facture { get; set; }
+        virtual public ICollection<Livraison> Livraisons { get; set; }
+        virtual public Fournisseur Vendeur { get; set; }
 
         // création
         public static void CréeTable(ModelBuilder builder)
         {
-            var entité = builder.Entity<Livraison>();
+            var entité = builder.Entity<Facture>();
 
             entité.HasKey(donnée => new { donnée.Uid, donnée.Rno, donnée.No });
 
             entité.HasIndex(donnée => donnée.Date);
 
             entité
-                .HasOne(livraison => livraison.Livreur)
-                .WithMany(livreur => livreur.Livraisons)
-                .HasForeignKey(livraison => new { livraison.Uid, livraison.Rno });
+                .HasOne(facture => facture.Vendeur)
+                .WithMany(fournisseur => fournisseur.Factures)
+                .HasForeignKey(facture => new { facture.Uid, facture.Rno });
 
             entité
-                .HasMany(l => l.Commandes)
-                .WithOne(c => c.Livraison)
-                .HasForeignKey(c => new { c.LivraisonUid, c.LivraisonRno, c.LivraisonNo });
+                .HasMany(facture => facture.Livraisons)
+                .WithOne(livraison => livraison.Facture)
+                .HasForeignKey(livraison => new { livraison.Uid, livraison.Rno, livraison.FactureNo });
 
-            entité.ToTable("Livraisons");
+            entité.ToTable("Factures");
         }
     }
 }

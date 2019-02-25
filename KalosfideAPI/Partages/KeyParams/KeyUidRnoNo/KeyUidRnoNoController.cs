@@ -1,10 +1,5 @@
 ﻿using KalosfideAPI.Data.Keys;
-using KalosfideAPI.Erreurs;
-using KalosfideAPI.Sécurité;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using KalosfideAPI.Utilisateurs;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Partages.KeyParams
@@ -12,7 +7,7 @@ namespace KalosfideAPI.Partages.KeyParams
     public class KeyUidRnoNoController<T, TVue> : KeyParamController<T, TVue, KeyParam> where T : AKeyUidRnoNo where TVue : AKeyUidRnoNo
     {
 
-        public KeyUidRnoNoController(IKeyUidRnoNoService<T,TVue> service) : base(service)
+        public KeyUidRnoNoController(IKeyUidRnoNoService<T,TVue> service, IUtilisateurService utilisateurService) : base(service, utilisateurService)
         {
         }
 
@@ -20,7 +15,7 @@ namespace KalosfideAPI.Partages.KeyParams
 
         protected async override Task FixeKeyParamAjout(TVue vue)
         {
-            vue.No = await _service.DernierNo(vue.Uid, vue.Rno) + 1;
+            vue.No = await _service.DernierNo(vue.KeyParam) + 1;
         }
 
     }

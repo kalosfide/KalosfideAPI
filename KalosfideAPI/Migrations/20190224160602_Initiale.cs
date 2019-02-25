@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace KalosfideAPI.Migrations
 {
-    public partial class Initial : Migration
+    public partial class Initiale : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -48,6 +48,87 @@ namespace KalosfideAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EtatCatégories",
+                columns: table => new
+                {
+                    Uid = table.Column<string>(maxLength: 20, nullable: false),
+                    Rno = table.Column<int>(nullable: false),
+                    No = table.Column<long>(nullable: false),
+                    Date = table.Column<DateTime>(nullable: false),
+                    Nom = table.Column<string>(maxLength: 200, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EtatCatégories", x => new { x.Uid, x.Rno, x.No, x.Date });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EtatClients",
+                columns: table => new
+                {
+                    Uid = table.Column<string>(maxLength: 20, nullable: false),
+                    Rno = table.Column<int>(nullable: false),
+                    Date = table.Column<DateTime>(nullable: false),
+                    Nom = table.Column<string>(maxLength: 200, nullable: false),
+                    Adresse = table.Column<string>(maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EtatClients", x => new { x.Uid, x.Rno, x.Date });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EtatFournisseurs",
+                columns: table => new
+                {
+                    Uid = table.Column<string>(maxLength: 20, nullable: false),
+                    Rno = table.Column<int>(nullable: false),
+                    Date = table.Column<DateTime>(nullable: false),
+                    Nom = table.Column<string>(maxLength: 200, nullable: false),
+                    Adresse = table.Column<string>(maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EtatFournisseurs", x => new { x.Uid, x.Rno, x.Date });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EtatProduits",
+                columns: table => new
+                {
+                    Uid = table.Column<string>(maxLength: 20, nullable: false),
+                    Rno = table.Column<int>(nullable: false),
+                    No = table.Column<long>(nullable: false),
+                    Date = table.Column<DateTime>(nullable: false),
+                    Nom = table.Column<string>(maxLength: 200, nullable: true),
+                    CatégorieNo = table.Column<long>(nullable: true),
+                    TypeMesure = table.Column<string>(maxLength: 1, nullable: true),
+                    TypeCommande = table.Column<string>(maxLength: 1, nullable: true),
+                    Prix = table.Column<decimal>(type: "decimal(5,2)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EtatProduits", x => new { x.Uid, x.Rno, x.No, x.Date });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EtatSite",
+                columns: table => new
+                {
+                    Uid = table.Column<string>(maxLength: 20, nullable: false),
+                    Rno = table.Column<int>(nullable: false),
+                    Date = table.Column<DateTime>(nullable: false),
+                    NomSite = table.Column<string>(maxLength: 200, nullable: true),
+                    Titre = table.Column<string>(maxLength: 200, nullable: true),
+                    Etat = table.Column<string>(maxLength: 1, nullable: true),
+                    DateEtat = table.Column<DateTime>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EtatSite", x => new { x.Uid, x.Rno, x.Date });
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Sites",
                 columns: table => new
                 {
@@ -55,7 +136,8 @@ namespace KalosfideAPI.Migrations
                     Rno = table.Column<int>(nullable: false),
                     NomSite = table.Column<string>(maxLength: 200, nullable: true),
                     Titre = table.Column<string>(maxLength: 200, nullable: true),
-                    Ouvert = table.Column<bool>(nullable: false)
+                    Etat = table.Column<string>(maxLength: 1, nullable: true, defaultValue: "N"),
+                    DateEtat = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -128,7 +210,8 @@ namespace KalosfideAPI.Migrations
                 columns: table => new
                 {
                     Uid = table.Column<string>(maxLength: 20, nullable: false),
-                    UserId = table.Column<string>(nullable: false)
+                    UserId = table.Column<string>(nullable: false),
+                    Etat = table.Column<string>(maxLength: 1, nullable: true, defaultValue: "N")
                 },
                 constraints: table =>
                 {
@@ -212,7 +295,8 @@ namespace KalosfideAPI.Migrations
                     Uid = table.Column<string>(maxLength: 20, nullable: false),
                     Rno = table.Column<int>(nullable: false),
                     SiteUid = table.Column<string>(maxLength: 20, nullable: true),
-                    SiteRno = table.Column<int>(nullable: false)
+                    SiteRno = table.Column<int>(nullable: false),
+                    Etat = table.Column<string>(maxLength: 1, nullable: true, defaultValue: "N")
                 },
                 constraints: table =>
                 {
@@ -276,6 +360,8 @@ namespace KalosfideAPI.Migrations
                     Uid = table.Column<string>(maxLength: 20, nullable: false),
                     Rno = table.Column<int>(nullable: false),
                     Date = table.Column<DateTime>(nullable: false),
+                    SiteUid = table.Column<string>(maxLength: 20, nullable: true),
+                    SiteRno = table.Column<int>(nullable: true),
                     Etat = table.Column<string>(maxLength: 1, nullable: true)
                 },
                 constraints: table =>
@@ -330,19 +416,19 @@ namespace KalosfideAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Livraisons",
+                name: "Factures",
                 columns: table => new
                 {
                     Uid = table.Column<string>(maxLength: 20, nullable: false),
                     Rno = table.Column<int>(nullable: false),
                     No = table.Column<long>(nullable: false),
-                    Date = table.Column<DateTime>(nullable: false)
+                    Date = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Livraisons", x => new { x.Uid, x.Rno, x.No });
+                    table.PrimaryKey("PK_Factures", x => new { x.Uid, x.Rno, x.No });
                     table.ForeignKey(
-                        name: "FK_Livraisons_Fournisseurs_Uid_Rno",
+                        name: "FK_Factures_Fournisseurs_Uid_Rno",
                         columns: x => new { x.Uid, x.Rno },
                         principalTable: "Fournisseurs",
                         principalColumns: new[] { "Uid", "Rno" },
@@ -357,19 +443,47 @@ namespace KalosfideAPI.Migrations
                     Rno = table.Column<int>(nullable: false),
                     No = table.Column<long>(nullable: false),
                     Nom = table.Column<string>(maxLength: 200, nullable: false),
-                    CatégorieNo = table.Column<long>(nullable: false),
+                    CategorieNo = table.Column<long>(nullable: false),
                     TypeMesure = table.Column<string>(maxLength: 1, nullable: false, defaultValue: "U"),
-                    TypeCommande = table.Column<string>(maxLength: 1, nullable: false, defaultValue: "1")
+                    TypeCommande = table.Column<string>(maxLength: 1, nullable: false, defaultValue: "1"),
+                    Prix = table.Column<decimal>(type: "decimal(5,2)", nullable: false, defaultValue: 0m)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Produits", x => new { x.Uid, x.Rno, x.No });
                     table.ForeignKey(
-                        name: "FK_Produits_Catégories_Uid_Rno_CatégorieNo",
-                        columns: x => new { x.Uid, x.Rno, x.CatégorieNo },
+                        name: "FK_Produits_Catégories_Uid_Rno_CategorieNo",
+                        columns: x => new { x.Uid, x.Rno, x.CategorieNo },
                         principalTable: "Catégories",
                         principalColumns: new[] { "Uid", "Rno", "No" },
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Livraisons",
+                columns: table => new
+                {
+                    Uid = table.Column<string>(maxLength: 20, nullable: false),
+                    Rno = table.Column<int>(nullable: false),
+                    No = table.Column<long>(nullable: false),
+                    Date = table.Column<DateTime>(nullable: true),
+                    FactureNo = table.Column<long>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Livraisons", x => new { x.Uid, x.Rno, x.No });
+                    table.ForeignKey(
+                        name: "FK_Livraisons_Fournisseurs_Uid_Rno",
+                        columns: x => new { x.Uid, x.Rno },
+                        principalTable: "Fournisseurs",
+                        principalColumns: new[] { "Uid", "Rno" },
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Livraisons_Factures_Uid_Rno_FactureNo",
+                        columns: x => new { x.Uid, x.Rno, x.FactureNo },
+                        principalTable: "Factures",
+                        principalColumns: new[] { "Uid", "Rno", "No" },
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -381,8 +495,9 @@ namespace KalosfideAPI.Migrations
                     No = table.Column<long>(nullable: false),
                     Date = table.Column<DateTime>(nullable: true),
                     LivraisonUid = table.Column<string>(maxLength: 20, nullable: true),
-                    LivraisonRno = table.Column<int>(nullable: true),
-                    LivraisonNo = table.Column<long>(nullable: true)
+                    LivraisonRno = table.Column<int>(nullable: false),
+                    LivraisonNo = table.Column<long>(nullable: true),
+                    Etat = table.Column<string>(maxLength: 1, nullable: true, defaultValue: "N")
                 },
                 constraints: table =>
                 {
@@ -402,27 +517,6 @@ namespace KalosfideAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EtatPrix",
-                columns: table => new
-                {
-                    Uid = table.Column<string>(maxLength: 20, nullable: false),
-                    Rno = table.Column<int>(nullable: false),
-                    No = table.Column<long>(nullable: false),
-                    Date = table.Column<DateTime>(nullable: false),
-                    Prix = table.Column<decimal>(type: "decimal(5,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EtatPrix", x => new { x.Uid, x.Rno, x.No, x.Date });
-                    table.ForeignKey(
-                        name: "FK_EtatPrix_Produits_Uid_Rno_No",
-                        columns: x => new { x.Uid, x.Rno, x.No },
-                        principalTable: "Produits",
-                        principalColumns: new[] { "Uid", "Rno", "No" },
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "DétailCommandes",
                 columns: table => new
                 {
@@ -434,7 +528,8 @@ namespace KalosfideAPI.Migrations
                     No2 = table.Column<long>(nullable: false),
                     TypeCommande = table.Column<string>(maxLength: 1, nullable: false),
                     Demande = table.Column<decimal>(type: "decimal(5,3)", nullable: false),
-                    Mesure = table.Column<decimal>(type: "decimal(5,3)", nullable: true),
+                    AServir = table.Column<decimal>(type: "decimal(5,3)", nullable: true),
+                    Servis = table.Column<decimal>(type: "decimal(5,3)", nullable: true),
                     Prix = table.Column<decimal>(type: "decimal(5,2)", nullable: true)
                 },
                 constraints: table =>
@@ -515,6 +610,36 @@ namespace KalosfideAPI.Migrations
                 columns: new[] { "Uid2", "Rno2", "No2" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_EtatCatégories_Uid_Rno_No",
+                table: "EtatCatégories",
+                columns: new[] { "Uid", "Rno", "No" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EtatClients_Uid_Rno",
+                table: "EtatClients",
+                columns: new[] { "Uid", "Rno" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EtatFournisseurs_Uid_Rno",
+                table: "EtatFournisseurs",
+                columns: new[] { "Uid", "Rno" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EtatProduits_Uid_Rno_No",
+                table: "EtatProduits",
+                columns: new[] { "Uid", "Rno", "No" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EtatRole_Uid_Rno",
+                table: "EtatRole",
+                columns: new[] { "Uid", "Rno" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Factures_Date",
+                table: "Factures",
+                column: "Date");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Fournisseurs_Nom",
                 table: "Fournisseurs",
                 column: "Nom");
@@ -525,15 +650,20 @@ namespace KalosfideAPI.Migrations
                 column: "Date");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Livraisons_Uid_Rno_FactureNo",
+                table: "Livraisons",
+                columns: new[] { "Uid", "Rno", "FactureNo" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Produits_Nom",
                 table: "Produits",
                 column: "Nom",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Produits_Uid_Rno_CatégorieNo",
+                name: "IX_Produits_Uid_Rno_CategorieNo",
                 table: "Produits",
-                columns: new[] { "Uid", "Rno", "CatégorieNo" });
+                columns: new[] { "Uid", "Rno", "CategorieNo" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Roles_SiteUid_SiteRno",
@@ -576,10 +706,22 @@ namespace KalosfideAPI.Migrations
                 name: "DétailCommandes");
 
             migrationBuilder.DropTable(
-                name: "EtatPrix");
+                name: "EtatCatégories");
+
+            migrationBuilder.DropTable(
+                name: "EtatClients");
+
+            migrationBuilder.DropTable(
+                name: "EtatFournisseurs");
+
+            migrationBuilder.DropTable(
+                name: "EtatProduits");
 
             migrationBuilder.DropTable(
                 name: "EtatRole");
+
+            migrationBuilder.DropTable(
+                name: "EtatSite");
 
             migrationBuilder.DropTable(
                 name: "EtatsUtilisateur");
@@ -601,6 +743,9 @@ namespace KalosfideAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Catégories");
+
+            migrationBuilder.DropTable(
+                name: "Factures");
 
             migrationBuilder.DropTable(
                 name: "Fournisseurs");

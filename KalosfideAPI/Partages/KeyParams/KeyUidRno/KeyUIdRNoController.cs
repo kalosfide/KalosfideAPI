@@ -1,9 +1,5 @@
 ﻿using KalosfideAPI.Data.Keys;
-using KalosfideAPI.Erreurs;
-using KalosfideAPI.Sécurité;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+using KalosfideAPI.Utilisateurs;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Partages.KeyParams
@@ -11,9 +7,7 @@ namespace KalosfideAPI.Partages.KeyParams
     public abstract class KeyUidRnoController<T, TVue> : KeyParamController<T, TVue, KeyParam> where T : AKeyUidRno where TVue : AKeyUidRno
     {
 
-        public KeyUidRnoController(
-            IKeyUidRnoService<T, TVue> service
-            ) : base(service)
+        public KeyUidRnoController(IKeyUidRnoService<T, TVue> service, IUtilisateurService utilisateurService) : base(service, utilisateurService)
         {
         }
 

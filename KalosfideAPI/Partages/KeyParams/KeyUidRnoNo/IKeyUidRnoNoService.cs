@@ -8,6 +8,6 @@ namespace KalosfideAPI.Partages.KeyParams
 {
     public interface IKeyUidRnoNoService<T, TVue> : IKeyParamService<T, TVue, KeyParam> where T : AKeyUidRnoNo where TVue: AKeyUidRnoNo
     {
-        Task<long> DernierNo(string uid, int rno);
+        Task<long> DernierNo(KeyParam param);
     }
 }

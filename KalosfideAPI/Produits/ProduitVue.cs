@@ -13,13 +13,13 @@ namespace KalosfideAPI.Produits
 
         // données
         public string Nom { get; set; }
-        public long CategorieNo { get; set; }
+        public long? CategorieNo { get; set; }
 
         public string TypeCommande { get; set; }
         public string TypeMesure { get; set; }
+        public decimal? Prix { get; set; }
 
         // calculés
         public string NomCategorie { get; set; }
-        public decimal Prix { get; set; }
     }
 }

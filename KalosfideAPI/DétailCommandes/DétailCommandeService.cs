@@ -3,14 +3,13 @@ using KalosfideAPI.Data.Keys;
 using KalosfideAPI.Partages.KeyParams;
 using KalosfideAPI.Produits;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.DétailCommandes
 {
-    public class DétailCommandeService : KeyUidRnoNo2Service<DétailCommande, DétailCommandeVue>, IDétailCommandeService
+    public class DétailCommandeService : KeyUidRnoNo2Service<DétailCommande, DétailCommandeVue, KeyUidRnoNo2>, IDétailCommandeService
     {
         private readonly IProduitService _produitService;
 
@@ -25,8 +24,7 @@ namespace KalosfideAPI.DétailCommandes
             return données
                 .Include(d => d.Commande)
                     .ThenInclude(c => c.Client)
-                .Include(d => d.Produit)
-                    .ThenInclude(p => p.EtatPrix);
+                .Include(d => d.Produit);
         }
 
         public override DétailCommande NouvelleDonnée()
@@ -38,26 +36,24 @@ namespace KalosfideAPI.DétailCommandes
         {
             donnée.TypeCommande = vue.TypeCommande;
             donnée.Demande = vue.Demande;
-            donnée.Mesure = vue.Mesure;
+            donnée.AServir = vue.Mesure;
             donnée.Prix = vue.Prix;
             return Task.CompletedTask;
         }
 
         public override DétailCommandeVue CréeVue(DétailCommande donnée)
         {
-            EtatPrix prix = donnée.Produit.EtatPrix.Last();
-            decimal prixEnCours = prix != null ? prix.Prix : -1;
             DétailCommandeVue vue = new DétailCommandeVue
             {
                 NomClient = donnée.Commande.Client.Nom,
                 NomProduit = donnée.Produit.Nom,
-                PrixUnitaire = prixEnCours,
+                PrixUnitaire = donnée.Produit.Prix,
                 TypeCommande = donnée.TypeCommande,
                 Demande = donnée.Demande,
-                Mesure = donnée.Mesure,
+                Mesure = donnée.AServir,
                 Prix = donnée.Prix
             };
-            FixeVueKey(donnée, vue);
+            vue.CopieKey(donnée.KeyParam);
             return vue;
         }
 

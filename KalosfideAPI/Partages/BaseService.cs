@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace KalosfideAPI.Partages
 {
-    public delegate Task<ErreurDeModel> DValidation<T>(T donnée) where T : class;
+    public delegate Task<ErreurDeModel> DValidationAsync<T>(T donnée) where T : class;
     public delegate bool ValideFiltre<T>(T t);
-    public delegate TVue Transforme<T, TVue>(T t);
+    public delegate Task<TVue> Transforme<T, TVue>(T t);
     public delegate IQueryable<T> InclutRelations<T>(IQueryable<T> queryT);
 
     public abstract class BaseService<T, TVue> : IBaseService<T, TVue> where T : class where TVue : class
     {
-        public DValidation<T> DValidation;
+        public DValidationAsync<T> DValidation;
         protected ApplicationContext _context;
         public abstract TVue CréeVue(T donnée);
 

@@ -10,6 +10,8 @@ namespace KalosfideAPI.Produits
 {
     public interface IProduitService: IKeyUidRnoNoService<Produit, ProduitVue>
     {
+        Task<List<ProduitVue>> Disponibles(KeyParam param);
+        Task<int> NbDisponibles(AKeyUidRno keySite);
         Task<bool> NomPris(string nom);
         Task<bool> NomPrisParAutre(AKeyUidRnoNo key, string nom);
     }

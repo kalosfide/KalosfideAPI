@@ -24,18 +24,25 @@ namespace KalosfideAPI.Data
             Data.EtatRole.CréeTable(builder);
 
             Data.Site.CréeTable(builder);
+            Data.EtatSite.CréeTable(builder);
 
             Data.Administrateur.CréeTable(builder);
             Data.Fournisseur.CréeTable(builder);
+            Data.EtatFournisseur.CréeTable(builder);
             Data.Client.CréeTable(builder);
+            Data.EtatClient.CréeTable(builder);
 
             // Tables de données
             Data.Catégorie.CréeTable(builder);
             Data.Produit.CréeTable(builder);
-            Data.EtatPrix.CréeTable(builder);
             Data.Commande.CréeTable(builder);
             Data.Livraison.CréeTable(builder);
             Data.DétailCommande.CréeTable(builder);
+            Data.Facture.CréeTable(builder);
+
+            // journaux
+            Data.EtatProduit.CréeTable(builder);
+            Data.EtatCatégorie.CréeTable(builder);
         }
 
         public DbSet<Utilisateur> Utilisateur { get; set; }
@@ -45,17 +52,23 @@ namespace KalosfideAPI.Data
         public DbSet<EtatRole> EtatRole { get; set; }
 
         public DbSet<Site> Site { get; set; }
+        public DbSet<EtatSite> EtatSite { get; set; }
 
         public DbSet<Administrateur> Administrateur { get; set; }
         public DbSet<Fournisseur> Fournisseur { get; set; }
+        public DbSet<EtatFournisseur> EtatFournisseur { get; set; }
         public DbSet<Client> Client { get; set; }
+        public DbSet<EtatClient> EtatClient { get; set; }
 
         public DbSet<Catégorie> Catégorie { get; set; }
+        public DbSet<EtatCatégorie> EtatCatégorie { get; set; }
         public DbSet<Produit> Produit { get; set; }
-        public DbSet<EtatPrix> EtatPrix{ get; set; }
+        public DbSet<EtatProduit> EtatProduit { get; set; }
+
         public DbSet<Commande> Commande { get; set; }
         public DbSet<DétailCommande> DétailCommande { get; set; }
         public DbSet<Livraison> Livraison { get; set; }
+        public DbSet<Facture> Facture { get; set; }
 
     }
 }

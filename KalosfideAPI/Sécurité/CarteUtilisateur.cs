@@ -1,5 +1,7 @@
-﻿using KalosfideAPI.Data.Constantes;
+﻿using KalosfideAPI.Data;
+using KalosfideAPI.Data.Constantes;
 using KalosfideAPI.Data.Keys;
+using KalosfideAPI.Sites;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +37,9 @@ namespace KalosfideAPI.Sécurité
         [JsonProperty]
         public List<CarteRole> Roles { get; set; }
 
+        [JsonProperty]
+        public List<SiteVue> Sites { get; set; }
+
         public string RolesSérialisés
         {
             get
@@ -44,19 +49,6 @@ namespace KalosfideAPI.Sécurité
             set
             {
                 Roles = JsonConvert.DeserializeObject<List<CarteRole>>(value);
-            }
-        }
-
-        public void PrendClaims(ClaimsPrincipal user)
-        {
-            IEnumerable<Claim> claims = user.Identities.FirstOrDefault()?.Claims;
-            if (claims != null && claims.Count() > 0) {
-                Claim claim = user.Claims.Where(c => c.Type == JwtClaims.UserId).First();
-                UserId = (claims.Where(c => c.Type == JwtClaims.UserId).First())?.Value;
-                UserName = (claims.Where(c => c.Type == JwtClaims.UserName).First())?.Value;
-                Uid = (claims.Where(c => c.Type == JwtClaims.UtilisateurId).First())?.Value;
-                Etat = (claims.Where(c => c.Type == JwtClaims.EtatUtilisateur).First())?.Value;
-                RolesSérialisés = (claims.Where(c => c.Type == JwtClaims.Roles).First())?.Value;
             }
         }
 
@@ -103,6 +95,21 @@ namespace KalosfideAPI.Sécurité
         {
             return EstUtilisateurActif && param.Uid == Uid
                 && (param.Rno == null || Roles.Where(role => EstRoleActif(role) && role.Rno == param.Rno).Any());
+        }
+
+        public bool EstClient(string nomSite)
+        {
+            return EstUtilisateurActif && Roles.Where(role => EstRoleActif(role) && role.NomSite == nomSite).Any();
+        }
+
+        public SiteVue SiteClient(KeyParam siteParam)
+        {
+            return Sites.Where(site => site.Uid != Uid && site.EstSemblable(siteParam)).FirstOrDefault();
+        }
+
+        public SiteVue SiteFournisseur(KeyParam siteParam)
+        {
+            return siteParam.Uid == Uid ? Sites.Where(site => site.Uid == Uid).FirstOrDefault() : null;
         }
     }
 }

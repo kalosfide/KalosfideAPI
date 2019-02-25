@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using KalosfideAPI.Data;
 using KalosfideAPI.Data.Keys;
@@ -8,23 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Partages.KeyParams
 {
-    public abstract class KeyUidRnoNoService<T, TVue> : KeyParamService<T, TVue, KeyParam>, IKeyUidRnoNoService<T, TVue> where T : AKeyUidRnoNo where TVue : AKeyUidRnoNo
+    public abstract class KeyUidRnoNoService<T, TVue, TEtat> : KeyParamService<T, TVue, TEtat, KeyParam>, IKeyUidRnoNoService<T, TVue>
+       where T : AKeyUidRnoNo where TVue : AKeyUidRnoNo where TEtat : AKeyUidRnoNo
     {
         public KeyUidRnoNoService(ApplicationContext context) : base(context)
         {
-        }
-
-        public override void FixeKey(T donnée, TVue vue)
-        {
-            donnée.Uid = vue.Uid;
-            donnée.Rno = vue.Rno;
-            donnée.No = vue.No;
-        }
-        public override void FixeVueKey(T donnée, TVue vue)
-        {
-            vue.Uid = donnée.Uid;
-            vue.Rno = donnée.Rno;
-            vue.No = donnée.No;
         }
 
         public override async Task<T> Lit(KeyParam param)
@@ -46,9 +32,9 @@ namespace KalosfideAPI.Partages.KeyParams
             return v;
         }
 
-        public async Task<long> DernierNo(string uid, int rno)
+        public async Task<long> DernierNo(KeyParam param)
         {
-            var données = _dbSet.Where(donnée => donnée.Uid == uid && donnée.Rno == rno);
+            var données = _dbSet.Where(donnée => donnée.Uid == param.Uid && donnée.Rno == param.Rno);
             return await données.AnyAsync() ? await données.MaxAsync(donnée => donnée.No) : 0;
         }
     }

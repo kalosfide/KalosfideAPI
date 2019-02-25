@@ -30,12 +30,20 @@ namespace KalosfideAPI.Data.Keys
             return false;
         }
 
-        public override KeyParam KeyParam => new KeyParam { Uid = Uid, Rno = Rno, No = No, Date = Date };
-        public override KeyParam KeyParamParent => new KeyParam { Uid = Uid, Rno = Rno, No = No };
-
         public override bool EstSemblable(KeyParam param)
         {
             return Uid == param.Uid && Rno == param.Rno && No == param.No && Date == Date;
         }
+
+        public override void CopieKey(KeyParam param)
+        {
+            Uid = param.Uid;
+            Rno = param.Rno ?? 0;
+            No = param.No ?? 0;
+            Date = param.Date?? DateTime.MinValue;
+        }
+
+        public override KeyParam KeyParam => new KeyParam { Uid = Uid, Rno = Rno, No = No, Date = Date };
+        public override KeyParam KeyParamParent => new KeyParam { Uid = Uid, Rno = Rno, No = No };
     }
 }

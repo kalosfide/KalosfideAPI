@@ -1,11 +1,15 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using KalosfideAPI.Data.Constantes;
+﻿using KalosfideAPI.Data.Constantes;
+using KalosfideAPI.Data.Keys;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KalosfideAPI.Data
 {
-    public class EtatRole: Keys.AKeyUidRno
+    public class EtatClient: AKeyUidRno
     {
         // key
         [Required]
@@ -16,24 +20,24 @@ namespace KalosfideAPI.Data
         [Required]
         public DateTime Date { get; set; }
 
-        // données
-        [MaxLength(LongueurMax.UId)]
-        public string SiteUid { get; set; }
-        public int? SiteRno { get; set; }
-
-        [StringLength(1)]
-        public string Etat { get; set; }
+        [Required]
+        [MaxLength(200)]
+        public string Nom { get; set; }
+        [MaxLength(500)]
+        public string Adresse { get; set; }
 
         // création
         public static void CréeTable(ModelBuilder builder)
         {
-            var entité = builder.Entity<EtatRole>();
+            var entité = builder.Entity<EtatClient>();
 
             entité.HasKey(donnée => new { donnée.Uid, donnée.Rno, donnée.Date });
 
             entité.HasIndex(donnée => new { donnée.Uid, donnée.Rno });
 
-            entité.ToTable("EtatRole");
+            entité.ToTable("EtatClients");
         }
+
     }
+
 }

@@ -32,7 +32,9 @@ namespace KalosfideAPI.Data
         [Column(TypeName = "decimal(5,3)")]
         public decimal Demande { get; set; }
         [Column(TypeName = "decimal(5,3)")]
-        public decimal? Mesure { get; set; }
+        public decimal? AServir { get; set; }
+        [Column(TypeName = "decimal(5,3)")]
+        public decimal? Servis { get; set; }
 
         [Column(TypeName = "decimal(5,2)")]
         public decimal? Prix { get; set; }

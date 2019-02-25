@@ -1,14 +1,12 @@
 ﻿using KalosfideAPI.Data.Constantes;
-using KalosfideAPI.Data.Keys;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace KalosfideAPI.Data
 {
-    public class Site : AKeyUidRno
+    public class EtatSite : Keys.AKeyUidRno
     {
         // key
         [Required]
@@ -16,6 +14,8 @@ namespace KalosfideAPI.Data
         public override string Uid { get; set; }
         [Required]
         public override int Rno { get; set; }
+        [Required]
+        public DateTime Date { get; set; }
 
         // données
         [MaxLength(200)]
@@ -27,22 +27,20 @@ namespace KalosfideAPI.Data
         public string Etat { get; set; }
         public DateTime? DateEtat { get; set; }
 
-        // navigation
-        [JsonIgnore]
-        virtual public ICollection<Role> Usagers { get; set; }
-
-        // calculés
-
         // création
         public static void CréeTable(ModelBuilder builder)
         {
-            var entité = builder.Entity<Site>();
+            var entité = builder.Entity<EtatSite>();
 
-            entité.HasKey(donnée => new { donnée.Uid, donnée.Rno });
+            entité.HasKey(donnée => new
+            {
+                donnée.Uid,
+                donnée.Rno,
+                donnée.Date
+            });
 
-            entité.Property(donnée => donnée.Etat).HasDefaultValue(TypeEtatSite.Nouveau);
-
-            entité.ToTable("Sites");
+            entité.ToTable("EtatSite");
         }
     }
 }
+

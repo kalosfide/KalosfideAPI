@@ -1,32 +1,16 @@
 ﻿using KalosfideAPI.Data;
 using KalosfideAPI.Data.Keys;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace KalosfideAPI.Partages.KeyParams
 {
-    public abstract class KeyUidRnoNoDService<T, TVue> : KeyParamService<T, TVue, KeyParam>, IKeyUidRnoNoDService<T, TVue> where T : AKeyUidRnoNoD where TVue : AKeyUidRnoNoD
+    public abstract class KeyUidRnoNoDService<T, TVue, TEtat> : KeyParamService<T, TVue, TEtat, KeyParam>, IKeyUidRnoNoDService<T, TVue>
+       where T : AKeyUidRnoNoD where TVue : AKeyUidRnoNoD where TEtat : AKeyUidRnoNoD
     {
         public KeyUidRnoNoDService(ApplicationContext context) : base(context)
         {
-        }
-
-        public override void FixeKey(T donnée, TVue vue)
-        {
-            donnée.Uid = vue.Uid;
-            donnée.Rno = vue.Rno;
-            donnée.No = vue.No;
-            donnée.Date = vue.Date;
-        }
-        public override void FixeVueKey(T donnée, TVue vue)
-        {
-            vue.Uid = donnée.Uid;
-            vue.Rno = donnée.Rno;
-            vue.No = donnée.No;
-            vue.Date = donnée.Date;
         }
 
         public override async Task<T> Lit(KeyParam param)

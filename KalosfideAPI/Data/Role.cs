@@ -21,6 +21,9 @@ namespace KalosfideAPI.Data
         public string SiteUid { get; set; }
         public int SiteRno { get; set; }
 
+        [StringLength(1)]
+        public string Etat { get; set; }
+
         // navigation
         virtual public Utilisateur Utilisateur { get; set; }
 
@@ -36,16 +39,7 @@ namespace KalosfideAPI.Data
                 return new KeyParam { Uid = SiteUid, Rno = SiteRno };
             }
         }
-        public string Etat
-        {
-            get
-            {
-                int nb = Etats.Count;
-                EtatRole[] etats = new EtatRole[nb];
-                Etats.CopyTo(etats, 0);
-                return etats[nb - 1].Etat;
-            }
-        }
+
         public bool EstAdministrateur { get => SiteUid == null; }
         public bool EstFournisseur { get => SiteUid == Uid && SiteRno == Rno; }
         public bool EstClient { get => !EstAdministrateur && !EstFournisseur; }
@@ -60,6 +54,8 @@ namespace KalosfideAPI.Data
                 donnée.Uid,
                 donnée.Rno
             });
+
+            entité.Property(donnée => donnée.Etat).HasDefaultValue(TypeEtatRole.Nouveau);
 
             entité.HasIndex(role => new { role.Uid, role.Rno, });
 

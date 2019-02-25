@@ -2,7 +2,6 @@
 using KalosfideAPI.Data.Keys;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,15 +9,83 @@ using System.Threading.Tasks;
 namespace KalosfideAPI.Partages.KeyParams
 {
 
-    public abstract class KeyParamService<T, TVue, TParam> : BaseService<T, TVue>, IKeyParamService<T, TVue, TParam> where T : AKeyBase where TVue : AKeyBase where TParam : KeyParam
+    public abstract class GéreEtat<T, TVue, TEtat> where T : AKeyBase where TVue : AKeyBase where TEtat : AKeyBase
     {
-        public abstract T NouvelleDonnée();
-        public abstract void FixeKey(T donnée, TVue vue);
-        public abstract void FixeVueKey(T donnée, TVue vue);
+
+        protected DbSet<TEtat> _dbSetEtat;
+
+        public GéreEtat(DbSet<TEtat> dbSetEtat)
+        {
+            _dbSetEtat = dbSetEtat;
+        }
+
+        /// <summary>
+        /// crée un TEtat sans clé reprenant tous les champs de donnée sauf la clé et la Date
+        /// </summary>
+        /// <param name="donnée"></param>
+        /// <returns></returns>
+        protected abstract TEtat CréeEtatAjout(T donnée);
+
+        public void AjouteEtatAjout(T donnée)
+        {
+            TEtat etat = CréeEtatAjout(donnée);
+            etat.CopieKey(donnée.KeyParam);
+            _dbSetEtat.Add(etat);
+        }
+
+        /// <summary>
+        /// crée un TEtat sans clé reprenant tous les champs de vue qui diffèrent des champs correspondants de donnée
+        /// met à jour ces champs dans donnée
+        /// </summary>
+        /// <param name="donnée"></param>
+        /// <returns>null si rien n'a changé</returns>
+        protected abstract TEtat CréeEtatEdite(T donnée, TVue vue);
+
+        public void AjouteEtatEdite(T donnée, TVue vue)
+        {
+            TEtat etat = CréeEtatEdite(donnée, vue);
+            if (etat != null)
+            {
+                _dbSetEtat.Add(etat);
+            }
+        }
+
+        public async Task SupprimeEtats(T donnée)
+        {
+            _dbSetEtat.RemoveRange(await _dbSetEtat
+                .Where(ep => donnée.EstSemblable(ep))
+                .ToListAsync());
+        }
+
+    }
+
+    public abstract class KeyParamService<T, TVue, TEtat, TParam> : BaseService<T, TVue>, IKeyParamService<T, TVue, TParam>
+        where T : AKeyBase where TVue : AKeyBase where TEtat : AKeyBase where TParam : KeyParam
+    {
 
         protected DbSet<T> _dbSet;
+        protected GéreEtat<T, TVue, TEtat> _géreEtat;
+
+        protected DValideAjoute<T> dValideAjoute;
+        public DValideAjoute<T> DValideAjoute()
+        {
+            return dValideAjoute;
+        }
+        protected DValideEdite<T> dValideEdite;
+        public DValideEdite<T> DValideEdite()
+        {
+            return dValideEdite;
+        }
+        protected DValideSupprime<T> dValideSupprime;
+        public DValideSupprime<T> DValideSupprime()
+        {
+            return dValideSupprime;
+        }
+    
+        public abstract T NouvelleDonnée();
+
         protected InclutRelations<T> _inclutRelations = null;
-        protected Transforme<T, TVue> _transforme;
+        protected Transforme<T, TVue> CréeVueAsync;
 
         public ValideFiltre<TVue> ValideVue { get; set; }
 
@@ -29,19 +96,18 @@ namespace KalosfideAPI.Partages.KeyParams
         public override T CréeDonnée(TVue vue)
         {
             T donnée = NouvelleDonnée();
-            FixeKey(donnée, vue);
+            vue.CopieKey(donnée.KeyParam);
             CopieVueDansDonnées(donnée, vue);
             return donnée;
         }
 
-        public virtual Task ValideAjoute(T donnée, ModelStateDictionary modelState)
-        {
-            return Task.CompletedTask;
-        }
-
-        public virtual void AjouteSansSauver(T donnée)
+        public void AjouteSansSauver(T donnée)
         {
             _dbSet.Add(donnée);
+            if (_géreEtat != null)
+            {
+                _géreEtat.AjouteEtatAjout(donnée);
+            }
         }
 
         public async Task<RetourDeService<T>> Ajoute(T donnée)
@@ -50,47 +116,63 @@ namespace KalosfideAPI.Partages.KeyParams
             return await SaveChangesAsync(donnée);
         }
 
-        protected virtual void EditeSansSauver(T donnée)
+        public void EditeSansSauver(T donnée, TVue vue)
         {
-            _context.Update(donnée);
+            if (_géreEtat != null)
+            {
+                _géreEtat.AjouteEtatEdite(donnée, vue);
+            }
+            else
+            {
+                CopieVueDansDonnées(donnée, vue);
+            }
+            _dbSet.Update(donnée);
         }
 
-        public virtual Task ValideEdite(T donnée, ModelStateDictionary modelState)
+        public async Task<RetourDeService<T>> Edite(T donnée, TVue vue)
         {
-            return Task.CompletedTask;
-        }
-
-        public async Task<RetourDeService<T>> Edite(T donnée)
-        {
-            EditeSansSauver(donnée);
+            EditeSansSauver(donnée, vue);
             return await SaveChangesAsync(donnée);
         }
 
-        protected void SupprimeSansSauver(T donnée)
+        public async Task SupprimeSansSauver(T donnée)
         {
-            _context.Remove(donnée);
+            _dbSet.Remove(donnée);
+            if (_géreEtat != null)
+            {
+                await _géreEtat.SupprimeEtats(donnée);
+            }
         }
 
         public async Task<RetourDeService<T>> Supprime(T donnée)
         {
-            SupprimeSansSauver(donnée);
+            await SupprimeSansSauver(donnée);
             return await SaveChangesAsync(donnée);
         }
 
         public abstract Task<T> Lit(TParam param);
         protected abstract ValideFiltre<T> ValideFiltre(KeyParam param);
 
-        protected async Task<List<TVue>> CréeVues(ValideFiltre<T> valideT, ValideFiltre<TVue> valideVue)
+        public async Task<List<TVue>> CréeVuesAsync(List<T> données)
+        {
+            return CréeVueAsync == null
+                ? données.Select(t => CréeVue(t)).ToList()
+                : (await Task.WhenAll(données.Select(t => CréeVueAsync(t)))).ToList();
+        }
+
+        protected virtual async Task<List<TVue>> CréeVues(ValideFiltre<T> valideT, ValideFiltre<TVue> valideVue)
         {
             IQueryable<T> ts = valideT == null ? _dbSet : _dbSet.Where(t => valideT(t));
             IQueryable<T> tsComplets = _inclutRelations == null ? ts : _inclutRelations(ts);
             List<T> données = await tsComplets.ToListAsync();
-            var vues = données.Select(t => (_transforme ?? CréeVue)(t));
-            vues = valideVue == null ? vues : vues.Where(v => valideVue(v));
-            return vues.ToList();
+
+            List<TVue> vues = await CréeVuesAsync(données);
+
+            vues = valideVue == null ? vues : vues.Where(v => valideVue(v)).ToList();
+            return vues;
         }
 
-        public async Task<TVue> LitVue(TParam param)
+        public virtual async Task<TVue> LitVue(TParam param)
         {
             List<TVue> vues = await CréeVues((T t) => t.EstSemblable(param), null);
             return vues.Count > 0 ? vues[0] : null;

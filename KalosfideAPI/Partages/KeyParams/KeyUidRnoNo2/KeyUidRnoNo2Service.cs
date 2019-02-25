@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using KalosfideAPI.Data;
 using KalosfideAPI.Data.Keys;
@@ -8,28 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KalosfideAPI.Partages.KeyParams
 {
-    public abstract class KeyUidRnoNo2Service<T, TVue> : KeyParamService<T, TVue, KeyParam>, IKeyUidRnoNo2Service<T, TVue> where T : AKeyUidRnoNo2 where TVue: AKeyUidRnoNo2
+    public abstract class KeyUidRnoNo2Service<T, TVue, TEtat> : KeyParamService<T, TVue, TEtat, KeyParam>, IKeyUidRnoNo2Service<T, TVue>
+       where T : AKeyUidRnoNo2 where TVue : AKeyUidRnoNo2 where TEtat : AKeyUidRnoNo2
     {
         public KeyUidRnoNo2Service(ApplicationContext context) : base(context)
         {
-        }
-        public override void FixeKey(T donnée, TVue vue)
-        {
-            donnée.Uid = vue.Uid;
-            donnée.Rno = vue.Rno;
-            donnée.No = vue.No;
-            donnée.Uid2 = vue.Uid2;
-            donnée.Rno2 = vue.Rno2;
-            donnée.No2 = vue.No2;
-        }
-        public override void FixeVueKey(T donnée, TVue vue)
-        {
-            vue.Uid = donnée.Uid;
-            vue.Rno = donnée.Rno;
-            vue.No = donnée.No;
-            vue.Uid2 = donnée.Uid2;
-            vue.Rno2 = donnée.Rno2;
-            vue.No2 = donnée.No2;
         }
 
         public KeyUidRnoNo Key2(AKeyUidRnoNo2 key)

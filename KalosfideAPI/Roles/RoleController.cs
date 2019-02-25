@@ -5,6 +5,7 @@ using KalosfideAPI.Erreurs;
 using KalosfideAPI.Partages;
 using KalosfideAPI.Partages.KeyParams;
 using KalosfideAPI.Sécurité;
+using KalosfideAPI.Utilisateurs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -17,13 +18,12 @@ namespace KalosfideAPI.Roles
     [ApiController]
     [ApiValidationFilter]
     [Authorize]
-    public class RoleController : BaseController
+    public class RoleController : KeyUidRnoController<Role, RoleVue>
     {
-        private IRoleService _service;
+        private IRoleService _service { get => __service as IRoleService; }
 
-        public RoleController(IRoleService service)
+        public RoleController(IRoleService service, IUtilisateurService utilisateurService) : base(service, utilisateurService)
         {
-            _service = service;
         }
 
         [HttpPost]
@@ -33,6 +33,12 @@ namespace KalosfideAPI.Roles
         [ProducesResponseType(404)] // not found
         public async Task<IActionResult> ChangeEtat([FromQuery] KeyUidRno param, [FromBody] string etat)
         {
+            CarteUtilisateur carte = await _utilisateurService.CréeCarteUtilisateur(HttpContext.User);
+            if (carte == null)
+            {
+                // fausse carte
+                return Forbid();
+            }
             if (!TypeEtatRole.EstValide(etat))
             {
                 return BadRequest();
@@ -44,11 +50,12 @@ namespace KalosfideAPI.Roles
                 return NotFound();
             }
 
-            bool permis = ChangeEtatEstPermis(donnée);
+            bool permis = (donnée.EstFournisseur && carte.EstAdministrateur) || (donnée.EstClient && carte.EstPropriétaire(donnée.SiteParam));
             if (!permis)
             {
-                return StatusCode(403);
+                return Forbid();
             }
+
             var retour = await _service.ChangeEtat(donnée, etat);
 
             return SaveChangesActionResult(retour);
@@ -56,16 +63,6 @@ namespace KalosfideAPI.Roles
 
         private bool ChangeEtatEstPermis(Role role)
         {
-            CarteUtilisateur carte = new CarteUtilisateur();
-            carte.PrendClaims(HttpContext.User);
-            if (role.EstFournisseur)
-            {
-                return carte.EstAdministrateur;
-            }
-            if (role.EstClient)
-            {
-                return carte.EstPropriétaire(role.SiteParam);
-            }
             return false;
         }
     }

@@ -32,6 +32,9 @@ namespace KalosfideAPI.Data
         [InverseProperty("Livreur")]
         virtual public ICollection<Livraison> Livraisons { get; set; }
 
+        [InverseProperty("Vendeur")]
+        virtual public ICollection<Facture> Factures { get; set; }
+
         // utiles
 
         public Site Site { get => Role.Site; }

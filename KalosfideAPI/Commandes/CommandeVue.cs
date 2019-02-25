@@ -1,8 +1,4 @@
-﻿using KalosfideAPI.Data;
-using KalosfideAPI.Data.Keys;
-using KalosfideAPI.DétailCommandes;
-using KalosfideAPI.Livraisons;
-using KalosfideAPI.Produits;
+﻿using KalosfideAPI.Data.Keys;
 using System;
 using System.Collections.Generic;
 
@@ -21,20 +17,26 @@ namespace KalosfideAPI.Commandes
         public string LivraisonUid { get; set; }
         public int? LivraisonRno { get; set; }
         public long? LivraisonNo { get; set; }
+        public string Etat { get; set; }
 
         // calculés
         public string NomClient { get; set; }
-        public List<CommandeVueDétail> Lignes { get; set; }
+        public bool? NouveauClient { get; set; }
+
+        public int? NbDetails { get; set; }
+        public List<CommandeVueDétail> Details { get; set; }
+
         public decimal? Prix { get; set; }
+
     }
 
-    public class CommandeVueDétail : AKeyUidRnoNo
+    public class CommandeVueDétail
     {
-        public override string Uid { get; set; }
-        public override int Rno { get; set; }
-        public override long No { get; set; }
+        public long No { get; set; }
 
         public string TypeCommande { get; set; }
         public decimal Demande { get; set; }
+        public decimal? AServir { get; set; }
+        public decimal? Servis { get; set; }
     }
 }

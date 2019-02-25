@@ -24,7 +24,7 @@ namespace KalosfideAPI.Data
         [MinLength(10), MaxLength(200)]
         public string Nom { get; set; }
         [Required]
-        public long CatégorieNo { get; set; }
+        public long CategorieNo { get; set; }
 
         [Required]
         [StringLength(1)]
@@ -32,10 +32,12 @@ namespace KalosfideAPI.Data
         [Required]
         [StringLength(1)]
         public string TypeCommande { get; set; }
+        [Required]
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal Prix { get; set; }
 
         // navigation
         virtual public Catégorie Catégorie { get; set; }
-        virtual public ICollection<EtatPrix> EtatPrix { get; set; }
 
         // utiles
 
@@ -50,11 +52,12 @@ namespace KalosfideAPI.Data
 
             entité.Property(donnée => donnée.TypeMesure).HasDefaultValue(TypeUnitéDeMesure.Aucune);
             entité.Property(donnée => donnée.TypeCommande).HasDefaultValue(TypeUnitéDeCommande.Unité);
+            entité.Property(donnée => donnée.Prix).HasDefaultValue(0);
 
             entité
                 .HasOne(produit => produit.Catégorie)
                 .WithMany(catégorie => catégorie.Produits)
-                .HasForeignKey(produit => new { produit.Uid, produit.Rno, produit.CatégorieNo })
+                .HasForeignKey(produit => new { produit.Uid, produit.Rno, produit.CategorieNo })
                 .HasPrincipalKey(catégorie => new { catégorie.Uid, catégorie.Rno, catégorie.No });
 
             entité.ToTable("Produits");

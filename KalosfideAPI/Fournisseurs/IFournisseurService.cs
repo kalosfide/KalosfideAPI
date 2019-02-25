@@ -1,13 +1,11 @@
 ﻿using KalosfideAPI.Data;
+using KalosfideAPI.Enregistrement;
 using KalosfideAPI.Partages.KeyParams;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace KalosfideAPI.Fournisseurs
 {
     public interface IFournisseurService : IKeyUidRnoService<Fournisseur, FournisseurVue>
     {
+        Fournisseur CréeFournisseur(Role role, EnregistrementFournisseurVue fournisseurVue);
     }
 }

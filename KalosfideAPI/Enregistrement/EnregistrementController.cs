@@ -2,10 +2,12 @@
 using System.Threading.Tasks;
 using KalosfideAPI.Administrateurs;
 using KalosfideAPI.Clients;
+using KalosfideAPI.Commandes;
 using KalosfideAPI.Data;
 using KalosfideAPI.Data.Constantes;
 using KalosfideAPI.Data.Keys;
 using KalosfideAPI.Fournisseurs;
+using KalosfideAPI.Livraisons;
 using KalosfideAPI.Partages;
 using KalosfideAPI.Roles;
 using KalosfideAPI.Sécurité;
@@ -37,6 +39,8 @@ namespace KalosfideAPI.Enregistrement
         private readonly IFournisseurService _fournisseurService;
         private readonly ISiteService _siteService;
         private readonly IClientService _clientService;
+        private readonly ICommandeService _commandeService;
+        private readonly ILivraisonService _livraisonService;
 
         public EnregistrementController(
             IJwtFabrique jwtFabrique,
@@ -45,7 +49,9 @@ namespace KalosfideAPI.Enregistrement
             IAdministrateurService administrateurService,
             IFournisseurService fournisseurService,
             ISiteService siteService,
-            IClientService clientService
+            IClientService clientService,
+            ICommandeService commandeService,
+            ILivraisonService livraisonService
             ) : base(jwtFabrique, service)
         {
             _roleService = roleService;
@@ -53,6 +59,8 @@ namespace KalosfideAPI.Enregistrement
             _fournisseurService = fournisseurService;
             _siteService = siteService;
             _clientService = clientService;
+            _commandeService = commandeService;
+            _livraisonService = livraisonService;
         }
 
         private async Task<RésultatEnregistrement> CréeUtilisateur(string type, VueBase vue)
@@ -83,10 +91,9 @@ namespace KalosfideAPI.Enregistrement
             {
                 Utilisateur utilisateur = await _service.UtilisateurDeUser(existant.Id);
 
-                CarteUtilisateur carte = new CarteUtilisateur();
-                carte.PrendClaims(HttpContext.User);
+                CarteUtilisateur carte = await _service.CréeCarteUtilisateur(HttpContext.User);
 
-                bool permis = (carte.EstUtilisateurActif && carte.Uid == utilisateur.Uid) || carte.EstAdministrateur;
+                bool permis = carte != null && ((carte.EstUtilisateurActif && carte.Uid == utilisateur.Uid) || carte.EstAdministrateur);
                 if (permis)
                 {
                     résultat.ACréé = false;
@@ -100,7 +107,7 @@ namespace KalosfideAPI.Enregistrement
                 }
                 else
                 {
-                    résultat.ActionResult = StatusCode(403);
+                    résultat.ActionResult = Forbid();
                 }
             }
             return résultat;
@@ -113,9 +120,9 @@ namespace KalosfideAPI.Enregistrement
                 case TypeDeRole.Administrateur.Code:
                     return true;
                 case TypeDeRole.Fournisseur.Code:
-                    return await _service.PeutAjouterRole(utilisateur, (vue as FournisseurVue).CréeFournisseur());
+                    return await _service.PeutAjouterRole(utilisateur, vue as EnregistrementFournisseurVue);
                 case TypeDeRole.Client.Code:
-                    return await _service.PeutAjouterRole(utilisateur, vue as ClientVue);
+                    return await _service.PeutAjouterRole(utilisateur, vue as EnregistrementClientVue);
                 default:
                     break;
             }
@@ -130,41 +137,35 @@ namespace KalosfideAPI.Enregistrement
             {
                 case TypeDeRole.Administrateur.Code:
                     résultat.Entité = (vue as AdministrateurVue).CréeAdministrateur();
+                    résultat.Entité.Uid = uid;
+                    résultat.Entité.Rno = rno;
                     break;
                 case TypeDeRole.Fournisseur.Code:
-                    résultat.Entité = (vue as FournisseurVue).CréeFournisseur();
-                    résultat.Site = (vue as FournisseurVue).CréeSite();
-                    résultat.Site.Uid = uid;
-                    résultat.Site.Rno = rno;
-                    résultat.Role.SiteUid = uid;
-                    résultat.Role.SiteRno = rno;
+                    résultat.Entité = _fournisseurService.CréeFournisseur(résultat.Role, vue as EnregistrementFournisseurVue);
+                    résultat.Site = _siteService.CréeSite(résultat.Role, vue as EnregistrementFournisseurVue);
                     break;
                 case TypeDeRole.Client.Code:
-                    résultat.Entité = (vue as ClientVue).CréeClient();
-                    résultat.Role.SiteUid = (vue as ClientVue).SiteUid;
-                    résultat.Role.SiteRno = (vue as ClientVue).SiteRno;
+                    résultat.Entité = _clientService.CréeClient(résultat.Role, vue as EnregistrementClientVue);
                     break;
                 default:
                     break;
             }
-            résultat.Entité.Uid = uid;
-            résultat.Entité.Rno = rno;
         }
 
-        private Task ValideEntité(RésultatEnregistrement résultat, string type)
+        private async Task ValideEntité(RésultatEnregistrement résultat, string type)
         {
             switch (type)
             {
                 case TypeDeRole.Administrateur.Code:
                     break;
                 case TypeDeRole.Fournisseur.Code:
-                    return _siteService.ValideAjoute((résultat.Site), ModelState);
+                    await _siteService.DValideAjoute()(résultat.Site, ModelState);
+                    break;
                 case TypeDeRole.Client.Code:
                     break;
                 default:
                     break;
             }
-            return Task.CompletedTask;
         }
 
         private void AjouteEntitéSansSauver(RésultatEnregistrement résultat, string type)
@@ -177,9 +178,16 @@ namespace KalosfideAPI.Enregistrement
                 case TypeDeRole.Fournisseur.Code:
                     _fournisseurService.AjouteSansSauver(résultat.Entité as Fournisseur);
                     _siteService.AjouteSansSauver(résultat.Site);
+                    _livraisonService.CréePremièreLivraison(résultat.Entité as Fournisseur);
                     break;
                 case TypeDeRole.Client.Code:
                     _clientService.AjouteSansSauver(résultat.Entité as Client);
+                    KeyUidRno keySite = new KeyUidRno
+                    {
+                        Uid = résultat.Role.SiteUid,
+                        Rno = résultat.Role.SiteRno
+                    };
+                    _commandeService.CréePremièreCommande(résultat.Entité as Client, keySite);
                     break;
                 default:
                     break;
@@ -198,15 +206,7 @@ namespace KalosfideAPI.Enregistrement
                     return résultat.ActionResult;
                 }
 
-                Utilisateur utilisateur = résultat.Utilisateur;
-
-                int roleNo = await _roleService.DernierNo(utilisateur.Uid) + 1;
-                Role role = new Role
-                {
-                    Uid = utilisateur.Uid,
-                    Rno = roleNo,
-                };
-                résultat.Role = role;
+                résultat.Role = await _roleService.CréeRole(résultat.Utilisateur);
 
                 CréeEntité(résultat, type, vue);
 
@@ -220,7 +220,7 @@ namespace KalosfideAPI.Enregistrement
                     return BadRequest(ModelState);
                 }
 
-                _roleService.AjouteSansSauver(role);
+                _roleService.AjouteSansSauver(résultat.Role);
                 AjouteEntitéSansSauver(résultat, type);
 
                 RetourDeService retour = await _service.SaveChangesAsync();
@@ -255,7 +255,7 @@ namespace KalosfideAPI.Enregistrement
         [ProducesResponseType(200)] // Ok
         [ProducesResponseType(400)] // Bad request
         [AllowAnonymous]
-        public async Task<IActionResult> Fournisseur(FournisseurVue vue)
+        public async Task<IActionResult> Fournisseur(EnregistrementFournisseurVue vue)
         {
             return await Enregistre(TypeDeRole.Fournisseur.Code, vue);
         }
@@ -264,7 +264,7 @@ namespace KalosfideAPI.Enregistrement
         [ProducesResponseType(200)] // Ok
         [ProducesResponseType(400)] // Bad request
         [AllowAnonymous]
-        public async Task<IActionResult> Client(ClientVue vue)
+        public async Task<IActionResult> Client(EnregistrementClientVue vue)
         {
             return await Enregistre(TypeDeRole.Client.Code, vue);
         }

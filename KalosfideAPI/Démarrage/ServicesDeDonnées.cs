@@ -23,9 +23,9 @@ namespace KalosfideAPI.Démarrage
 
             Produits.Initialisation.ConfigureServices(services);
 
-            FixePrix.Initialisation.ConfigureServices(services);
-
             Commandes.Initialisation.ConfigureServices(services);
+
+            Livraisons.Initialisation.ConfigureServices(services);
         }
     }
 }
